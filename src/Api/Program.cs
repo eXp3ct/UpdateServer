@@ -1,6 +1,23 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+using Api;
+using Serilog;
 
-app.MapGet("/", () => "Hello World!");
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var host = CreateHostBuilder(args).Build();
 
-app.Run();
+        host?.Run();
+    }
+
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .UseSerilog((context, config) =>
+            {
+                config.ReadFrom.Configuration(context.Configuration);
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
+}

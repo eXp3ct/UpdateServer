@@ -11,7 +11,7 @@ namespace Api
         public void Configure(SwaggerGenOptions options)
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Version API", Version = "v1" });
-            options.OperationFilter<AcceptHeaderOperationFilter>();
+            //options.OperationFilter<AcceptHeaderOperationFilter>();
         }
     }
 
@@ -19,27 +19,28 @@ namespace Api
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
-            var produces = context.ApiDescription.SupportedResponseTypes
-                .SelectMany(r => r.ApiResponseFormats)
-                .Select(f => f.MediaType)
-                .Distinct();
+            //var produces = context.ApiDescription.SupportedResponseTypes
+            //    .SelectMany(r => r.ApiResponseFormats)
+            //    .Select(f => f.MediaType)
+            //    .Distinct();
 
-            if (produces.Any())
-            {
-                operation.Parameters ??= [];
+            //if (produces.Any())
+            //{
+            //    operation.Parameters ??= [];
 
-                operation.Parameters.Add(new OpenApiParameter
-                {
-                    Name = "Accept",
-                    In = ParameterLocation.Header,
-                    Required = false,
-                    Schema = new OpenApiSchema
-                    {
-                        Type = "string",
-                        Enum = [.. produces.Select(p => new OpenApiString(p))]
-                    }
-                });
-            }
+            //    operation.Parameters.Add(new OpenApiParameter
+            //    {
+            //        Name = "Accept",
+            //        In = ParameterLocation.Header,
+            //        Required = false,
+            //        Schema = new OpenApiSchema
+            //        {
+            //            Type = "string",
+            //            Enum = [.. produces.Select(p => new OpenApiString(p))]
+            //        }
+            //    });
+            //}
+
         }
     }
 }

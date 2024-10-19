@@ -2,6 +2,7 @@
 
 namespace Domain.Models
 {
+    [XmlRoot("item")]
     public class VersionInfo
     {
         [XmlElement("id")]
@@ -16,13 +17,13 @@ namespace Domain.Models
         [XmlElement("releaseDate")]
         public DateTime ReleaseDate { get; set; }
 
-        [XmlElement("changelogFileUrl")]
+        [XmlElement("changelog")]
         public required string ChangelogFileUrl { get; set; }
 
-        [XmlElement("zipUrl")]
+        [XmlElement("url")]
         public required string ZipUrl { get; set; }
 
-        [XmlElement("isMandatory")]
+        [XmlElement("mandatory")]
         public bool IsMandatory { get; set; }
 
         [XmlElement("isActive")]

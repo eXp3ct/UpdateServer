@@ -1,4 +1,8 @@
 ﻿using Data;
+using Infrastructure;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Api
 {
@@ -8,11 +12,12 @@ namespace Api
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "VersionUpdater v1");
+                c.ConfigObject.AdditionalItems["disableCache"] = true;
+            });
 
             app.UseRouting();
             app.UseAuthorization();
@@ -23,6 +28,7 @@ namespace Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfiguration>();
             services.AddControllers()
                 .AddNewtonsoftJson()
                 .AddXmlSerializerFormatters();
@@ -30,6 +36,7 @@ namespace Api
             services.AddPersistance(Configuration);
             services.AddSwaggerGen();
             services.AddSwaggerGenNewtonsoftSupport();
+            services.AddInfrastructure();
         }
     }
 }

@@ -1,6 +1,5 @@
-﻿using Data.Inferfaces;
-using Domain.Models;
-using Infrastructure.Extensions;
+﻿using Domain.Models;
+using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -9,35 +8,39 @@ namespace Api.Controllers
     [Route("[controller]")]
     public class VersionsController : ControllerBase
     {
-        private readonly IVersionRepository _versions;
+        private readonly IVersionService _versionsChecker;
 
-        public VersionsController(IVersionRepository versions)
+        public VersionsController(IVersionService versionChecker)
         {
-            _versions = versions;
+            _versionsChecker = versionChecker;
         }
 
-        [HttpGet]
-        [Route("{appName}")]
-        [Produces("application/json", "application/xml")]
-        public async Task<IActionResult> GetLatestVersion(string appName, CancellationToken cancellationToken, [FromHeader(Name = "Accept")] string accept = "application/json")
+        [HttpGet("{appName}")]
+        [ProducesResponseType(typeof(VersionInfo), StatusCodes.Status200OK, "application/json", "application/xml")]
+        public async Task<IActionResult> GetVersion(
+            string appName,
+            CancellationToken cancellationToken,
+            [FromHeader(Name = "Accept")] string accept = "application/xml",
+            [FromQuery] DateTime? date = null)
         {
-            var version = await _versions.GetLatestVersionAsync(appName, cancellationToken);
+            var version = await _versionsChecker.GetVersion(appName, date, cancellationToken);
 
-            if (version is null)
-                return NotFound("Version not found");
-
-            if (accept.Contains("application/xml"))
-                return new ObjectResult(version) { ContentTypes = { "application/xml" } };
-
-            return Ok(version);
+            return version is null
+                ? NotFound("Version not found")
+                : accept.Contains("application/xml")
+                ? new ObjectResult(version)
+                {
+                    ContentTypes = { "application/xml" },
+                    StatusCode = StatusCodes.Status200OK
+                }
+                : (IActionResult)Ok(version);
         }
 
         [HttpPost]
-        [Produces("application/json", "application/xml")]
         public async Task<IActionResult> CreateVersion([FromBody] VersionInfo version, CancellationToken cancellationToken)
         {
-            await _versions.AddVersionAsync(version, cancellationToken);
-            return CreatedAtAction(nameof(GetLatestVersion), new { appName = version.ApplicationName }, version);
+            await _versionsChecker.AddVersionAsync(version, cancellationToken);
+            return CreatedAtAction(nameof(GetVersion), new { appName = version.ApplicationName }, version);
         }
     }
 }

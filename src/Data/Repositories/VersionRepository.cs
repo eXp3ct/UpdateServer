@@ -1,11 +1,6 @@
 ﻿using Data.Inferfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Data.Repositories
 {
@@ -24,6 +19,11 @@ namespace Data.Repositories
             versionInfo.ReleaseDate = DateTime.UtcNow;
             await _context.Versions.AddAsync(versionInfo, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public IQueryable<VersionInfo> GetAllVersionsAsync(string appName, CancellationToken cancellationToken = default)
+        {
+            return _context.Versions.Where(v => v.ApplicationName == appName);
         }
 
         public async Task<VersionInfo?> GetLatestVersionAsync(string appName, CancellationToken cancellationToken = default)

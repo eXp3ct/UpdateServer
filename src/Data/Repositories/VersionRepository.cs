@@ -26,6 +26,11 @@ namespace Data.Repositories
             return _context.Versions.Where(v => v.ApplicationName == appName);
         }
 
+        public async Task<VersionInfo?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Versions.FindAsync([id, cancellationToken], cancellationToken: cancellationToken);
+        }
+
         public async Task<VersionInfo?> GetLatestVersionAsync(string appName, CancellationToken cancellationToken = default)
         {
             return await _context.Versions
@@ -33,5 +38,6 @@ namespace Data.Repositories
                 .OrderByDescending(v => v.ReleaseDate)
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
     }
 }

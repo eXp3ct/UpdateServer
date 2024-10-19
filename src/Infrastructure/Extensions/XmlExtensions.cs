@@ -1,18 +1,30 @@
-﻿using System.Xml.Serialization;
+﻿using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Infrastructure.Extensions
 {
     public static class XmlExtensions
     {
-        public static string ToXml<T>(this T obj)
+        public static string SerializeToXml<T>(T obj)
         {
-            var serializer = new XmlSerializer(typeof(T));
+            var xmlSerializer = new XmlSerializer(typeof(T));
 
-            using var stream = new StringWriter();
+            var settings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                Indent = true,
+                OmitXmlDeclaration = false // Оставляем декларацию XML
+            };
 
-            serializer.Serialize(stream, obj);
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add(string.Empty, string.Empty); // Убираем лишние пространства имен
 
-            return stream.ToString();
+            using var stringWriter = new StringWriter();
+            using var xmlWriter = XmlWriter.Create(stringWriter, settings);
+
+            xmlSerializer.Serialize(xmlWriter, obj, namespaces);
+            return stringWriter.ToString();
         }
     }
 }

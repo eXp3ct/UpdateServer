@@ -17,6 +17,7 @@ namespace Data
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddScoped<IVersionRepository, VersionRepository>();
+            services.AddScoped<IVersionPathsRepository, VersionPathsRepository>();
         }
     }
 }

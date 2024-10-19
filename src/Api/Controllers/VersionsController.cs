@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using Domain.Enums;
+using Domain.Models;
+using Infrastructure.Services;
 using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +26,7 @@ namespace Api.Controllers
             [FromQuery] DateTime? date = null)
         {
             var version = await _versionsChecker.GetVersion(appName, date, cancellationToken);
-
+            
             return version is null
                 ? NotFound("Version not found")
                 : accept.Contains("application/xml")
@@ -42,5 +44,7 @@ namespace Api.Controllers
             await _versionsChecker.AddVersionAsync(version, cancellationToken);
             return CreatedAtAction(nameof(GetVersion), new { appName = version.ApplicationName }, version);
         }
+
+        
     }
 }

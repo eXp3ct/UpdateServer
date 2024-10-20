@@ -62,5 +62,15 @@ namespace Api.Controllers
             var apps = await _versionService.GetAllStoredApplicationsAsync(cancellationToken);
             return Ok(apps);
         }
+
+        [HttpGet("{versionId}/info")]
+        public async Task<IActionResult> GetVersionById([FromRoute] Guid versionId, CancellationToken cancellationToken)
+        {
+            var versionInfo = await _versionService.GetVersionById(versionId, cancellationToken);
+
+            if (versionInfo is null) return NotFound("Version not found");
+
+            return Ok(versionInfo);
+        }
     }
 }

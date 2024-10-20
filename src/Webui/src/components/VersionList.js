@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ListGroup, Button, Modal } from 'react-bootstrap';
-import { getAppVersions, getVersionInfo } from './api/api';
+import { getAppVersions, getVersionInfo } from '../api/api';
 
 // const versions = [
 //     { id: '1', releaseDate: '2024-01-01', version: '1.0.0.0', isMandatory: true },

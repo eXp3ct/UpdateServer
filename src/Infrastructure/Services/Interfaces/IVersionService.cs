@@ -7,6 +7,7 @@ namespace Infrastructure.Services.Interfaces
         public Task<VersionInfo?> GetLatestVersionAsync(string appName, CancellationToken cancellationToken = default);
         public Task<VersionInfo?> GetVersionByDateAsync(string appName, DateTime date, CancellationToken cancellationToken = default);
         public Task<VersionInfo?> GetVersionAsync(string appName, DateTime? date, CancellationToken cancellationToken = default);
+        public Task<VersionInfo?> GetVersionById(Guid id, CancellationToken cancellationToken = default);
         public Task<IEnumerable<StoredApplication>> GetAllStoredApplicationsAsync(CancellationToken cancellationToken = default);
         public IEnumerable<VersionInfoShort> GetAllVersionsAsync(string appName);
         public Task AddVersionAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default);

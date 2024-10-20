@@ -9,7 +9,7 @@ namespace Api
     {
         public IConfiguration Configuration { get; set; } = configuration;
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseSwagger();
             app.UseSwaggerUI(c =>

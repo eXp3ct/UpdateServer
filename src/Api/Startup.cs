@@ -1,7 +1,6 @@
 ﻿using Data;
 using Infrastructure;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Api
@@ -20,6 +19,7 @@ namespace Api
             });
 
             app.UseRouting();
+            app.UseCors("AllowAllOrigins");
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
@@ -28,6 +28,17 @@ namespace Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    builder =>
+                    {
+                        builder
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowAnyOrigin();
+                    });
+            });
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfiguration>();
             services.AddControllers()
                 .AddNewtonsoftJson()

@@ -1,61 +1,125 @@
 import React, { useState, useEffect } from 'react';
-import { ListGroup, Button, Modal } from 'react-bootstrap';
-import { getAppVersions, getVersionInfo } from '../api/api';
-
-// const versions = [
-//     { id: '1', releaseDate: '2024-01-01', version: '1.0.0.0', isMandatory: true },
-//     { id: '2', releaseDate: '2024-02-15', version: '1.1.0.0', isMandatory: false },
-// ];
+import { ListGroup, Row, Col, Modal } from 'react-bootstrap';
+import { getAppVersions, getVersionInfoById } from '../api/api';
+import './components.css'; // Тут можно добавить доп. стили
 
 function VersionList({ app }) {
     const [selectedVersion, setSelectedVersion] = useState(null);
-    const [versions, setVersions] = useState([])
+    const [versions, setVersions] = useState([]);
 
+    // Загрузка версий
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await getAppVersions(app);
-                setVersions(response);
+                const sortedVersions = response.sort(
+                    (a, b) => new Date(b.releaseDate) - new Date(a.releaseDate)
+                );
+                setVersions(sortedVersions);
             } catch (error) {
-                console.error('Error fetching app names:', error);
+                console.error('Error fetching app versions:', error);
             }
         };
 
         fetchData();
-    }, []);
+    }, [app]);
 
-    const handleVersionClick = async (version) => {
-        const versionInfo = await getVersionInfo(app);
+    const handleVersionClick = async (id) => {
+        const versionInfo = await getVersionInfoById(id);
         setSelectedVersion(versionInfo);
     };
 
     const handleClose = () => setSelectedVersion(null);
 
-
     return (
         <>
-            <ListGroup className="my-3">
-                {versions.map((version) => (
-                    <ListGroup.Item key={version.id} onClick={() => handleVersionClick(version)}>
-                        {version.version} ({new Intl.DateTimeFormat('ru-RU', { dateStyle: 'full' }).format(new Date(version.releaseDate))})
+            <ListGroup className="my-3 version-list">
+                {versions.map((version, index) => (
+                    <ListGroup.Item
+                        key={version.id}
+                        onClick={() => handleVersionClick(version.id)}
+                        className="version-item"
+                    >
+                        {version.version} (
+                        {new Intl.DateTimeFormat('ru-RU', {
+                            dateStyle: 'full',
+                        }).format(new Date(version.releaseDate))}
+                        )
+                        {index === 0 && (
+                            <span className="badge bg-success ms-2">Последняя</span>
+                        )}
+                        {version.isMandatory && (
+                            <span className="badge bg-warning ms-2">Обязательна</span>
+                        )}
+                        {!version.isActive && (
+                            <span className="badge bg-danger ms-2">Доступна</span>
+                        )}
                     </ListGroup.Item>
                 ))}
-                <Button variant="outline-primary" className="mt-2">
-                    + Добавить версию
-                </Button>
             </ListGroup>
 
-            <Modal show={!!selectedVersion} onHide={handleClose}>
+            <Modal show={!!selectedVersion} onHide={handleClose} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Полная информация о версии</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedVersion && (
-                        <>
-                            <p>Дата выпуска: {new Intl.DateTimeFormat('ru-RU', { dateStyle: 'full' }).format(new Date(selectedVersion.releaseDate))}</p>
-                            <p>Версия: {selectedVersion.version}</p>
-                            <p>Обязательно: {selectedVersion.isMandatory ? 'Да' : 'Нет'}</p>
-                        </>
+                        <div className="version-info">
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Приложение:</Col>
+                                <Col xs={7} className="value">{selectedVersion.applicationName}</Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Версия:</Col>
+                                <Col xs={7} className="value">{selectedVersion.version}</Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Дата выпуска:</Col>
+                                <Col xs={7} className="value">
+                                    {new Intl.DateTimeFormat('ru-RU', { dateStyle: 'full' }).format(
+                                        new Date(selectedVersion.releaseDate)
+                                    )}
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Файл изменений:</Col>
+                                <Col xs={7} className="value">
+                                    <a
+                                        href={selectedVersion.changelogFileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="link"
+                                    >
+                                        {selectedVersion.changelogFileUrl}
+                                    </a>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Файл сборки:</Col>
+                                <Col xs={7} className="value">
+                                    <a
+                                        href={selectedVersion.zipUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="link"
+                                    >
+                                        {selectedVersion.zipUrl}
+                                    </a>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Обязательно:</Col>
+                                <Col xs={7} className="value">
+                                    <span className="badge bg-warning ms-2">{selectedVersion.isMandatory ? 'Да' : 'Нет'}</span>
+                                </Col>
+                            </Row>
+                            <Row className="mb-2">
+                                <Col xs={5} className="label">Доступна:</Col>
+                                <Col xs={7} className="value">
+                                    <span className="badge bg-danger ms-2">{selectedVersion.isActive ? 'Да' : 'Нет'}</span>
+                                </Col>
+                            </Row>
+                        </div>
                     )}
                 </Modal.Body>
             </Modal>

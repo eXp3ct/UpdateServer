@@ -3,7 +3,7 @@ using Domain.Models;
 
 namespace Data.Inferfaces
 {
-    public interface IVersionPathsRepository
+    public interface IVersionPathsRepository : IRepository
     {
         public Task AddAsync(VersionPaths versionPath, CancellationToken cancellationToken = default);
         public Task<VersionPaths?> GetPathAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default);

@@ -1,6 +1,5 @@
-﻿using Domain.Enums;
-using Domain.Models;
-using Infrastructure.Services;
+﻿using Domain.Models;
+using FluentValidation;
 using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +9,13 @@ namespace Api.Controllers
     [Route("[controller]")]
     public class VersionsController : ControllerBase
     {
-        private readonly IVersionService _versionsChecker;
+        private readonly IVersionService _versionService;
+        private readonly IValidator<VersionInfo> _validator;
 
-        public VersionsController(IVersionService versionChecker)
+        public VersionsController(IVersionService versionChecker, IValidator<VersionInfo> validator)
         {
-            _versionsChecker = versionChecker;
+            _versionService = versionChecker;
+            _validator = validator;
         }
 
         [HttpGet("{appName}")]
@@ -25,8 +26,8 @@ namespace Api.Controllers
             [FromHeader(Name = "Accept")] string accept = "application/xml",
             [FromQuery] DateTime? date = null)
         {
-            var version = await _versionsChecker.GetVersion(appName, date, cancellationToken);
-            
+            var version = await _versionService.GetVersionAsync(appName, date, cancellationToken);
+
             return version is null
                 ? NotFound("Version not found")
                 : accept.Contains("application/xml")
@@ -35,16 +36,31 @@ namespace Api.Controllers
                     ContentTypes = { "application/xml" },
                     StatusCode = StatusCodes.Status200OK
                 }
-                : (IActionResult)Ok(version);
+                : Ok(version);
+        }
+
+        [HttpGet("{appName}/list")]
+        public IActionResult GetAllVersions([FromRoute] string appName)
+        {
+            return Ok(_versionService.GetAllVersionsAsync(appName));
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateVersion([FromBody] VersionInfo version, CancellationToken cancellationToken)
         {
-            await _versionsChecker.AddVersionAsync(version, cancellationToken);
+            var validationResult = await _validator.ValidateAsync(version, cancellationToken);
+            if (!validationResult.IsValid)
+                return BadRequest("Incorrect version format, must be like '1.1.1.1'");
+
+            await _versionService.AddVersionAsync(version, cancellationToken);
             return CreatedAtAction(nameof(GetVersion), new { appName = version.ApplicationName }, version);
         }
 
-        
+        [HttpGet("apps")]
+        public async Task<IActionResult> GetStoredApps(CancellationToken cancellationToken)
+        {
+            var apps = await _versionService.GetAllStoredApplicationsAsync(cancellationToken);
+            return Ok(apps);
+        }
     }
 }

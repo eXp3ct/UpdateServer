@@ -25,6 +25,11 @@ namespace Data.Repositories
                 x => x.VersionInfoId == versionInfo.Id, cancellationToken);
         }
 
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return _context.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task UpdateAsync(VersionPaths paths, CancellationToken cancellationToken = default)
         {
             _context.Paths.Update(paths);

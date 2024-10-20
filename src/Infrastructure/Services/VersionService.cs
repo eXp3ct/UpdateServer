@@ -18,12 +18,33 @@ namespace Infrastructure.Services
             return _repository.AddVersionAsync(versionInfo, cancellationToken);
         }
 
+        public async Task<IEnumerable<StoredApplication>> GetAllStoredApplicationsAsync(CancellationToken cancellationToken = default)
+        {
+            var versions = await _repository.GetAllVersionsAsync(cancellationToken);
+
+            // Группируем и выбираем уникальные приложения по имени
+            return versions
+                .GroupBy(v => v.ApplicationName)
+                .Select(g => new StoredApplication { AppName = g.Key });
+        }
+
+        public IEnumerable<VersionInfoShort> GetAllVersionsAsync(string appName)
+        {
+            return _repository.GetAllVersionsAsync(appName).Select(v => new VersionInfoShort
+            {
+                Id = v.Id,
+                Version = v.Version,
+                ReleaseDate = v.ReleaseDate,
+                IsMandatory = v.IsMandatory,
+            });
+        }
+
         public Task<VersionInfo?> GetLatestVersionAsync(string appName, CancellationToken cancellationToken = default)
         {
             return _repository.GetLatestVersionAsync(appName, cancellationToken);
         }
 
-        public async Task<VersionInfo?> GetVersion(string appName, DateTime? date, CancellationToken cancellationToken = default)
+        public async Task<VersionInfo?> GetVersionAsync(string appName, DateTime? date, CancellationToken cancellationToken = default)
         {
 
             return date is DateTime versionDate

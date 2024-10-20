@@ -17,6 +17,7 @@ namespace Data.Repositories
         {
             versionInfo.Id = Guid.NewGuid();
             versionInfo.ReleaseDate = DateTime.UtcNow;
+
             await _context.Versions.AddAsync(versionInfo, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
         }
@@ -24,6 +25,11 @@ namespace Data.Repositories
         public IQueryable<VersionInfo> GetAllVersionsAsync(string appName, CancellationToken cancellationToken = default)
         {
             return _context.Versions.Where(v => v.ApplicationName == appName);
+        }
+
+        public async Task<IEnumerable<VersionInfo>> GetAllVersionsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Versions.AsNoTracking().ToListAsync(cancellationToken);
         }
 
         public async Task<VersionInfo?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -39,5 +45,9 @@ namespace Data.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

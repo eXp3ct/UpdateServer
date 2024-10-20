@@ -2,11 +2,6 @@
 using Domain.Enums;
 using Domain.Models;
 using Infrastructure.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services
 {
@@ -17,6 +12,11 @@ namespace Infrastructure.Services
         public VersionMetadataService(IVersionPathsRepository repository)
         {
             _repository = repository;
+        }
+
+        public async Task<VersionPaths?> GetVersionPathsAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default)
+        {
+            return await _repository.GetPathAsync(versionInfo, cancellationToken);
         }
 
         public async Task<VersionPaths> UpdateVersionPathsAsync(VersionInfo versionInfo, FileType type, string filePath, CancellationToken cancellationToken = default)
@@ -36,9 +36,9 @@ namespace Infrastructure.Services
             }
             else
             {
-                if (type == FileType.Changelog && string.IsNullOrEmpty(paths.ChangelogPath))
+                if (type == FileType.Changelog)
                     paths.ChangelogPath = filePath;
-                else if (type == FileType.Zip && string.IsNullOrEmpty(paths.ZipPath))
+                else if (type == FileType.Zip)
                     paths.ZipPath = filePath;
 
                 await _repository.UpdateAsync(paths, cancellationToken);

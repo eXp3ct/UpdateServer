@@ -1,6 +1,8 @@
-﻿using Infrastructure.Services;
+﻿using FluentValidation;
+using Infrastructure.Services;
 using Infrastructure.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Infrastructure
 {
@@ -12,6 +14,7 @@ namespace Infrastructure
             services.AddScoped<IVersionStorageService, VersionStorageService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IVersionMetadataService, VersionMetadataService>();
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
 }

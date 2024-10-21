@@ -90,6 +90,9 @@ function App() {
 
       console.log('Версия успешно добавлена!');
       closeModal();
+
+      const apps = await fetchAppNames();
+      setApplications(apps);
     } catch (error) {
       console.error('Ошибка при добавлении версии:', error);
     }
@@ -103,7 +106,7 @@ function App() {
           <Col key={app.appName} xs={4}>
             <Card
               onClick={() => handleAppSelect(app.appName)}
-              className="mb-3 app-button"
+              className={`mb-3 app-button bg-light ${selectedApp === app.appName ? "border-primary" : ""}`}
               style={{ cursor: 'pointer' }}
             >
               <Card.Body>{app.appName}</Card.Body>

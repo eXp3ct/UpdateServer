@@ -79,3 +79,14 @@ export const getVersionInfoById = async (versionId) => {
         throw error;
     }
 } 
+
+export const deleteVersionById = async (versionId) => {
+    try{
+        const response = await axios.delete(`${API_URL}/versions/${versionId}`);
+
+        return response.data;
+    }catch(error){
+        console.error('Error deleting app version', error)
+        throw error;
+    }
+}

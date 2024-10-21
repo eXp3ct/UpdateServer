@@ -41,6 +41,7 @@ namespace Infrastructure.Services
                 Version = v.Version,
                 ReleaseDate = v.ReleaseDate,
                 IsMandatory = v.IsMandatory,
+                IsActive = v.IsActive
             });
         }
 

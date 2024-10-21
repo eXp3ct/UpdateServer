@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ListGroup, Row, Col, Modal } from 'react-bootstrap';
-import { getAppVersions, getVersionInfoById } from '../api/api';
+import { ListGroup, Row, Col, Modal, Button } from 'react-bootstrap';
+import { deleteVersionById, getAppVersions, getVersionInfoById } from '../api/api';
 import './components.css'; // Тут можно добавить доп. стили
 
 function VersionList({ app }) {
@@ -31,6 +31,11 @@ function VersionList({ app }) {
 
     const handleClose = () => setSelectedVersion(null);
 
+    const handleDelete = async (versionId) => {
+        await deleteVersionById(versionId);
+        setVersions((prev) => prev.filter((v) => v.id !== versionId));
+    }
+
     return (
         <>
             <ListGroup className="my-3 version-list">
@@ -38,7 +43,7 @@ function VersionList({ app }) {
                     <ListGroup.Item
                         key={version.id}
                         onClick={() => handleVersionClick(version.id)}
-                        className="version-item"
+                        className="version-item justify-content-between"
                     >
                         {version.version} (
                         {new Intl.DateTimeFormat('ru-RU', {
@@ -51,9 +56,20 @@ function VersionList({ app }) {
                         {version.isMandatory && (
                             <span className="badge bg-warning ms-2">Обязательна</span>
                         )}
-                        {!version.isActive && (
-                            <span className="badge bg-danger ms-2">Доступна</span>
+                        {version.isActive && (
+                            <span className="badge bg-danger ms-2">Не доступна</span>
                         )}
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            className="ms-3 align-items-end"
+                            onClick={(e) => {
+                                e.stopPropagation(); // Останавливаем всплытие события
+                                handleDelete(version.id);
+                            }}
+                        >
+                            <i className="bi bi-trash"></i>
+                        </Button>
                     </ListGroup.Item>
                 ))}
             </ListGroup>
@@ -110,13 +126,13 @@ function VersionList({ app }) {
                             <Row className="mb-2">
                                 <Col xs={5} className="label">Обязательно:</Col>
                                 <Col xs={7} className="value">
-                                    <span className="badge bg-warning ms-2">{selectedVersion.isMandatory ? 'Да' : 'Нет'}</span>
+                                    {selectedVersion.isMandatory ? 'Да' : 'Нет'}
                                 </Col>
                             </Row>
                             <Row className="mb-2">
                                 <Col xs={5} className="label">Доступна:</Col>
                                 <Col xs={7} className="value">
-                                    <span className="badge bg-danger ms-2">{selectedVersion.isActive ? 'Да' : 'Нет'}</span>
+                                    {selectedVersion.isActive ? 'Да' : 'Нет'}
                                 </Col>
                             </Row>
                         </div>

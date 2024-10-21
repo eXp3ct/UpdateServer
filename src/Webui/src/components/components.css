@@ -4,6 +4,10 @@
         transform 0.1s;
 }
 
+.app-button.active{
+    background-color: #d6f4f7;
+}
+
 .app-button:hover {
     background-color: #f8f9fa;
     transform: scale(1.03);

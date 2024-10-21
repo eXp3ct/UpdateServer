@@ -42,7 +42,7 @@ jobs:
         run: npm run build
 
       - name: Move React build to output
-        run: mv src/Webui/build/* output/webui/
+        run: mv ./src/Webui/build/* ./output/webui/
 
       - name: Add Makefile to output
         run: cp Makefile output/

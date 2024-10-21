@@ -1,4 +1,6 @@
 using Api;
+using Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 public class Program
@@ -6,6 +8,10 @@ public class Program
     public static void Main(string[] args)
     {
         var host = CreateHostBuilder(args).Build();
+
+        using var scope = host.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        context.Database.Migrate();
 
         host?.Run();
     }

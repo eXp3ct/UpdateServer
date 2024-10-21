@@ -22,6 +22,17 @@ namespace Data.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
 
+        public async Task DeleteVersionByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var info = await GetByIdAsync(id, cancellationToken);
+
+            if(info is null)
+                return;
+
+            _context.Versions.Remove(info);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
         public IQueryable<VersionInfo> GetAllVersionsAsync(string appName, CancellationToken cancellationToken = default)
         {
             return _context.Versions.Where(v => v.ApplicationName == appName);

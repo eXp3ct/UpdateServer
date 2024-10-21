@@ -72,5 +72,23 @@ namespace Api.Controllers
 
             return Ok(versionInfo);
         }
+
+        [HttpDelete("{versionId}")]
+        public IActionResult DeleteVersionById([FromRoute] Guid versionId)
+        {
+            // Редиректим на метод удаления файлов в FilesController
+            return RedirectToAction(
+                nameof(FilesController.DeleteVersionFromStorage),
+                "Files",
+                new { versionId }
+            );
+        }
+
+        [HttpDelete("versions/entry/{versionId}")]
+        public async Task<IActionResult> DeleteVersionEntry([FromRoute] Guid versionId, CancellationToken cancellationToken)
+        {
+            await _versionService.DeleteVersionById(versionId, cancellationToken);
+            return Ok("Version files deleted");
+        }
     }
 }

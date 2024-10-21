@@ -18,6 +18,11 @@ namespace Infrastructure.Services
             return _repository.AddVersionAsync(versionInfo, cancellationToken);
         }
 
+        public async Task DeleteVersionById(Guid id, CancellationToken cancellationToken = default)
+        {
+            await _repository.DeleteVersionByIdAsync(id, cancellationToken);
+        }
+
         public async Task<IEnumerable<StoredApplication>> GetAllStoredApplicationsAsync(CancellationToken cancellationToken = default)
         {
             var versions = await _repository.GetAllVersionsAsync(cancellationToken);

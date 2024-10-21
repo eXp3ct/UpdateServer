@@ -9,5 +9,6 @@ namespace Data.Inferfaces
         public Task<IEnumerable<VersionInfo>> GetAllVersionsAsync(CancellationToken cancellationToken = default);
         public Task AddVersionAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default);
         public Task<VersionInfo?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        public Task DeleteVersionByIdAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

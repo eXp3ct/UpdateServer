@@ -13,11 +13,12 @@ namespace Api.Controllers
     {
         private readonly IVersionStorageService _versionStorageService;
         private readonly IVersionRepository _versionRepository;
-
-        public FilesController(IVersionStorageService versionStorageService, IVersionRepository versionRepository)
+        private readonly IConfiguration _configuration;
+        public FilesController(IVersionStorageService versionStorageService, IVersionRepository versionRepository, IConfiguration configuration)
         {
             _versionStorageService = versionStorageService;
             _versionRepository = versionRepository;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -62,7 +63,29 @@ namespace Api.Controllers
             var fileBytes = await _versionStorageService.ReadVersionFileAsync(versionInfo, FileType.Zip, cancellationToken);
             if (fileBytes is null) return NotFound("File not found");
 
-            return File(fileBytes, "application/zip");
+            return File(fileBytes, "application/zip", _configuration["DefaultReleaseFileName"]);
+        }
+
+        [HttpDelete("{versionId}")]
+        public async Task<IActionResult> DeleteVersionFromStorage([FromRoute] Guid versionId, CancellationToken cancellationToken)
+        {
+            var versionInfo = await GetVersionOrNotFound(versionId, cancellationToken);
+            if (versionInfo is null) return NotFound("Version not found");
+
+            await _versionStorageService.DeleteVersionFilesAsync(versionInfo, cancellationToken);
+            //try
+            //{
+            //}
+            //catch
+            //{
+            //    return BadRequest();
+            //}
+
+            return RedirectToAction(
+                nameof(VersionsController.DeleteVersionEntry),
+                "Versions",
+                new { versionId }
+            ); ;
         }
 
         private async Task<VersionInfo?> GetVersionOrNotFound(Guid versionId, CancellationToken cancellationToken)
@@ -80,7 +103,7 @@ namespace Api.Controllers
             };
         }
 
-        private void UpdateVersionUrl(VersionInfo versionInfo, FileType type, string url)
+        private static void UpdateVersionUrl(VersionInfo versionInfo, FileType type, string url)
         {
             switch (type)
             {

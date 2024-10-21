@@ -26,6 +26,15 @@ namespace Infrastructure.Services
             _configuration = configuration;
         }
 
+        public async Task DeleteVersionFilesAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default)
+        {
+            var versionPaths = await _metadataService.GetVersionPathsAsync(versionInfo, cancellationToken)
+                ?? throw new ArgumentNullException($"Version paths not found: {versionInfo.Id}");
+
+            await _fileService.DeleteFileAsync(versionPaths.ChangelogPath, cancellationToken);
+
+        }
+
         public async Task<byte[]?> ReadVersionFileAsync(VersionInfo versionInfo, FileType type, CancellationToken cancellationToken = default)
         {
             var versionPaths = await _metadataService.GetVersionPathsAsync(versionInfo, cancellationToken);

@@ -14,6 +14,23 @@ namespace Infrastructure.Services
                 ?? throw new ArgumentNullException("Cannot read local storage location");
         }
 
+        public Task DeleteFileAsync(string path, CancellationToken cancellationToken = default)
+        {
+            if (!File.Exists(path))
+                throw new FileNotFoundException($"File not found: {path}");
+
+            File.Delete(path);
+            
+            var directory = Path.GetDirectoryName(path);
+
+            if (directory is null)
+                throw new DirectoryNotFoundException($"Directory not found: {directory}");
+
+            Directory.Delete(directory, true);
+
+            return Task.CompletedTask;
+        }
+
         public async Task<byte[]> ReadFileAsync(string path, CancellationToken cancellationToken = default)
         {
             if (!File.Exists(path))

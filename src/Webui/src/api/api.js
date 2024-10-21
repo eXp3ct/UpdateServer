@@ -1,7 +1,20 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5069';
+let API_URL = '';
 
+/**
+ * Загружает конфигурацию из config.json
+ */
+export const loadConfig = async () => {
+  try {
+    const response = await fetch('/config.json');
+    const config = await response.json();
+    API_URL = config.API_URL;
+  } catch (error) {
+    console.error('Ошибка при загрузке конфигурации:', error);
+    throw error;
+  }
+};
 export const fetchAppNames = async () => {
     try {
         const response = await axios.get(`${API_URL}/versions/apps`, {

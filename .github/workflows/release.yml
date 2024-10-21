@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main  # Запускать при пуше в main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.x'
+
+      - name: Setup Node.js 20.13.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.13.1'
+
+      - name: Install EF Core tools (для миграций)
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Build ASP.NET Core API и выполнить миграции
+        working-directory: src/Api
+        run: |
+          dotnet restore
+          dotnet ef database update  # Выполняем миграции
+          dotnet publish -c Release -o ../../output/api
+
+      - name: Install dependencies for React
+        working-directory: src/Webui
+        run: npm install
+
+      - name: Build React app
+        working-directory: src/Webui
+        run: npm run build
+
+      - name: Move React build to output
+        run: mv src/Webui/build/* output/webui/
+
+      - name: Add Makefile to output
+        run: cp Makefile output/
+
+      - name: Archive build artifacts
+        run: |
+          cd output
+          zip -r release.zip .
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: "Release v${{ github.run_number }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output/release.zip
+          asset_name: release.zip
+          asset_content_type: application/zip

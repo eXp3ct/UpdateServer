@@ -6,10 +6,11 @@ import App from './App';
 import "bootstrap/dist/css/bootstrap.min.css";
 // Bootstrap Bundle JS
 import "bootstrap/dist/js/bootstrap.bundle.min";
+import { loadConfig } from './api/api';
 
 const renderApp = async () => {
   try {
-    await loadConfig(); // Загружаем конфигурацию перед рендером
+    await loadConfig; // Загружаем конфигурацию перед рендером
     ReactDOM.render(
       <React.StrictMode>
         <App />

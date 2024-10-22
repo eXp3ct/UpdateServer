@@ -66,7 +66,7 @@ namespace Api.Controllers
         [HttpGet("{versionId}/info")]
         public async Task<IActionResult> GetVersionById([FromRoute] Guid versionId, CancellationToken cancellationToken)
         {
-            var versionInfo = await _versionService.GetVersionById(versionId, cancellationToken);
+            var versionInfo = await _versionService.GetVersionByIdAsync(versionId, cancellationToken);
 
             if (versionInfo is null) return NotFound("Version not found");
 
@@ -90,5 +90,6 @@ namespace Api.Controllers
             await _versionService.DeleteVersionById(versionId, cancellationToken);
             return Ok("Version files deleted");
         }
+
     }
 }

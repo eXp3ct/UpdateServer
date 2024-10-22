@@ -68,7 +68,7 @@ namespace Infrastructure.Services
             return Task.FromResult(version);
         }
 
-        public async Task<VersionInfo?> GetVersionById(Guid id, CancellationToken cancellationToken = default)
+        public async Task<VersionInfo?> GetVersionByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _repository.GetByIdAsync(id, cancellationToken);
         }

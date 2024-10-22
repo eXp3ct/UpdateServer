@@ -10,6 +10,7 @@ function App() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
 
+
   const handleAppSelect = (appName) => {
     setSelectedApp((prev) => (prev === appName ? null : appName));
   };

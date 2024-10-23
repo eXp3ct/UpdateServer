@@ -15,7 +15,7 @@ namespace Domain.Models
         public required string Version { get; set; }
 
         [XmlElement("releaseDate")]
-        public DateTime ReleaseDate { get; set; }
+        public DateTime? ReleaseDate { get; set; }
 
         [XmlElement("changelog")]
         public required string ChangelogFileUrl { get; set; }

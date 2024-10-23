@@ -30,7 +30,8 @@ namespace Infrastructure.Services
             {
                 Directory.Delete(directory);
                 var parent = Directory.GetParent(directory);
-                Directory.Delete(parent.FullName);
+                if(Directory.GetFiles(path).Length <= 0)
+                    Directory.Delete(parent.FullName);
             }
 
             return Task.CompletedTask;

@@ -16,7 +16,7 @@ namespace Data.Repositories
         public async Task AddVersionAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default)
         {
             versionInfo.Id = Guid.NewGuid();
-            versionInfo.ReleaseDate = DateTime.UtcNow;
+            versionInfo.ReleaseDate ??= DateTime.UtcNow;
 
             await _context.Versions.AddAsync(versionInfo, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);

@@ -1,6 +1,7 @@
 ﻿using Data.Inferfaces;
 using Domain.Models;
 using Infrastructure.Services.Interfaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Services
 {
@@ -63,7 +64,7 @@ namespace Infrastructure.Services
         {
             var version = _repository
                 .GetAllVersionsAsync(appName, cancellationToken)
-                .FirstOrDefault(v => v.ReleaseDate.Date == date.Date);
+                .FirstOrDefault(v => v.ReleaseDate!.Value.Date == date.Date);
 
             return Task.FromResult(version);
         }

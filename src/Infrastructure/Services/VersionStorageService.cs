@@ -1,6 +1,7 @@
 ﻿using Data.Inferfaces;
 using Domain.Enums;
 using Domain.Models;
+using Infrastructure.Extensions;
 using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -53,7 +54,7 @@ namespace Infrastructure.Services
 
         public async Task<VersionPaths> SaveVersionFileAsync(IFormFile file, VersionInfo versionInfo, FileType type, CancellationToken cancellationToken = default)
         {
-            var folder = Path.Combine(versionInfo.ApplicationName, versionInfo.ReleaseDate.ToString("yyyy-MM-dd"));
+            var folder = Path.Combine(versionInfo.ApplicationName, versionInfo.Version.VersionToKebabFormat());
             var fileName = type == FileType.Changelog ? _configuration["DefaultChangelogFileName"] : _configuration["DefaultReleaseFileName"];
 
             // Сохраняем файл на диск

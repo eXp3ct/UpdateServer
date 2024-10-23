@@ -59,8 +59,11 @@ jobs:
       - name: Read changelog
         id: get_changelog
         run: |
-          CHANGELOG=$(awk '/^## \[/{f=0} f; /^## \[/{f=1}' CHANGELOG.md | tr '\n' ' ')
-          echo "changelog=$CHANGELOG" >> $GITHUB_ENV
+          CHANGELOG=$(awk '/^## \[/{f=0} f; /^## \[/{f=1}' CHANGELOG.md)
+          echo "$CHANGELOG" > changelog.txt
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          cat changelog.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
@@ -70,7 +73,7 @@ jobs:
         with:
           tag_name: v${{ env.version }}
           release_name: "Release v${{ env.version }}"
-          body: ${{ env.changelog }}
+          body: ${{ env.CHANGELOG }}  # Используем многострочный changelog
           draft: false
           prerelease: false
 

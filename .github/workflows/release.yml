@@ -1,9 +1,11 @@
 name: Build and Release
 
 on:
-  push:
+  pull_request:
     branches:
-      - main  # Запускать при пуше в main
+      - main
+    types:
+      - closed  # Запуск при закрытии PR (слиянии)
 
 jobs:
   build:
@@ -23,14 +25,10 @@ jobs:
         with:
           node-version: '20.13.1'
 
-      - name: Install EF Core tools (для миграций)
-        run: dotnet tool install --global dotnet-ef
-
       - name: Build ASP.NET Core API и выполнить миграции
         working-directory: src/Api
         run: |
           dotnet restore
-          dotnet ef database update  # Выполняем миграции
           dotnet publish -c Release -o ../../output/api
 
       - name: Install dependencies for React
@@ -54,14 +52,25 @@ jobs:
           cd output
           zip -r release.zip .
 
+      - name: Read version from file
+        id: get_version
+        run: echo "version=$(cat version.txt)" >> $GITHUB_ENV
+
+      - name: Read changelog
+        id: get_changelog
+        run: |
+          CHANGELOG=$(awk '/^## \[/{f=0} f; /^## \[/{f=1}' CHANGELOG.md)
+          echo "changelog=$CHANGELOG" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
-          release_name: "Release v${{ github.run_number }}"
+          tag_name: v${{ env.version }}
+          release_name: "Release v${{ env.version }}"
+          body: ${{ env.changelog }}
           draft: false
           prerelease: false
 

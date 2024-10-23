@@ -59,7 +59,7 @@ jobs:
       - name: Read changelog
         id: get_changelog
         run: |
-          CHANGELOG=$(awk '/^## \[/{f=0} f; /^## \[/{f=1}' CHANGELOG.md)
+          CHANGELOG=$(awk '/^## \[/{f=0} f; /^## \[/{f=1}' CHANGELOG.md | tr '\n' ' ')
           echo "changelog=$CHANGELOG" >> $GITHUB_ENV
 
       - name: Create GitHub Release

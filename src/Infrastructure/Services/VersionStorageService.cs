@@ -32,7 +32,7 @@ namespace Infrastructure.Services
                 ?? throw new ArgumentNullException($"Version paths not found: {versionInfo.Id}");
 
             await _fileService.DeleteFileAsync(versionPaths.ChangelogPath, cancellationToken);
-
+            await _fileService.DeleteFileAsync(versionPaths.ZipPath, cancellationToken);
         }
 
         public async Task<byte[]?> ReadVersionFileAsync(VersionInfo versionInfo, FileType type, CancellationToken cancellationToken = default)

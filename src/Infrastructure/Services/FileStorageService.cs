@@ -26,7 +26,12 @@ namespace Infrastructure.Services
             if (directory is null)
                 throw new DirectoryNotFoundException($"Directory not found: {directory}");
 
-            Directory.Delete(directory, true);
+            if(Directory.GetFiles(directory).Length <= 0)
+            {
+                Directory.Delete(directory);
+                var parent = Directory.GetParent(directory);
+                Directory.Delete(parent.FullName);
+            }
 
             return Task.CompletedTask;
         }

@@ -1,32 +1,16 @@
-﻿using System.Xml.Serialization;
+﻿using Domain.Interfaces;
 
 namespace Domain.Models
 {
-    [XmlRoot("item")]
-    public class VersionInfo
+    public class VersionInfo : IEntity
     {
-        [XmlElement("id")]
-        public Guid Id { get; set; }
-
-        [XmlElement("applicationName")]
-        public required string ApplicationName { get; set; }
-
-        [XmlElement("version")]
+        public int Id { get; set; }
         public required string Version { get; set; }
-
-        [XmlElement("releaseDate")]
-        public DateTime? ReleaseDate { get; set; }
-
-        [XmlElement("changelog")]
-        public required string ChangelogFileUrl { get; set; }
-
-        [XmlElement("url")]
-        public required string ZipUrl { get; set; }
-
-        [XmlElement("mandatory")]
+        public DateTime ReleaseDate { get; set; }
         public bool IsMandatory { get; set; }
-
-        [XmlElement("isActive")]
-        public bool IsActive { get; set; }
+        public bool IsAvailable { get; set; }
+        public string? ChangelogUrl { get; set; }
+        public string? ReleaseUrl { get; set; }
+        public int PathId { get; set; }
     }
 }

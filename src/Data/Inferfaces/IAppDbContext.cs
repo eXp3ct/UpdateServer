@@ -11,6 +11,7 @@ namespace Data.Inferfaces
         public DbSet<Application> Applications { get; }
 
         public DbSet<T> Set<T>() where T : class;
+
         public EntityEntry Entry(object entity);
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

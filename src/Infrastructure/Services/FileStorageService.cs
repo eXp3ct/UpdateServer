@@ -20,17 +20,17 @@ namespace Infrastructure.Services
                 throw new FileNotFoundException($"File not found: {path}");
 
             File.Delete(path);
-            
+
             var directory = Path.GetDirectoryName(path);
 
             if (directory is null)
                 throw new DirectoryNotFoundException($"Directory not found: {directory}");
 
-            if(Directory.GetFiles(directory).Length <= 0)
+            if (Directory.GetFiles(directory).Length <= 0)
             {
                 Directory.Delete(directory);
                 var parent = Directory.GetParent(directory);
-                if(Directory.GetFiles(path).Length <= 0)
+                if (Directory.GetFiles(path).Length <= 0)
                     Directory.Delete(parent.FullName);
             }
 

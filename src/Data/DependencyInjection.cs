@@ -4,7 +4,6 @@ using Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Data
 {
@@ -18,7 +17,7 @@ namespace Data
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
-            services.AddSingleton<ILoggerFactory, LoggerFactory>();
+            services.AddScoped<IApplicationRepository, ApplicationRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }

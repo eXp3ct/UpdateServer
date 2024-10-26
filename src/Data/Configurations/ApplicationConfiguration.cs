@@ -20,6 +20,7 @@ namespace Data.Configurations
                 .HasMaxLength(1000);
 
             builder.Property(a => a.DateOfCreation)
+                .HasDefaultValueSql("datetime(current_timestamp, 'localtime')")
                 .IsRequired();
 
             builder.Property(a => a.DateModified)

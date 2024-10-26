@@ -6,6 +6,7 @@
         /// Changelog file
         /// </summary>
         Changelog = 0,
+
         /// <summary>
         /// Release file
         /// </summary>

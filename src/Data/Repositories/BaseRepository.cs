@@ -7,9 +7,10 @@ namespace Data.Repositories
 {
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class, IEntity
     {
-        private readonly IAppDbContext _context;
+        protected readonly IAppDbContext _context;
+        protected readonly DbSet<TEntity> _set;
         private readonly ILogger<BaseRepository<TEntity>> _logger;
-        private readonly DbSet<TEntity> _set;
+
         private readonly string _entityName = typeof(TEntity).Name;
 
         public BaseRepository(IAppDbContext context, ILogger<BaseRepository<TEntity>> logger)
@@ -24,7 +25,6 @@ namespace Data.Repositories
             var entry = await _set.AddAsync(entity, cancellationToken);
 
             _logger.LogInformation("{type} : {id} was added to database", _entityName, entity.Id);
-
 
             return entry.Entity;
         }

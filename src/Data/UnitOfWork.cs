@@ -1,19 +1,30 @@
 ﻿using Data.Inferfaces;
 using Data.Repositories;
+using Domain.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Data
 {
-    public class UnitOfWork(IAppDbContext context, ILoggerFactory loggerFactory) : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
-        private readonly IAppDbContext _context = context;
-        private readonly ILoggerFactory _loggerFactory = loggerFactory;
+        private readonly IAppDbContext _context;
+        private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<Type, object> _repositories = [];
 
-        public void Dispose()
+        public UnitOfWork(IAppDbContext context, IServiceProvider serviceProvider)
         {
-            _context.Dispose();
+            _context = context;
+            _serviceProvider = serviceProvider;
         }
+
+        public IApplicationRepository ApplicationRepository
+            => _serviceProvider.GetRequiredService<IApplicationRepository>();
+
+        public IBaseRepository<VersionInfo> VersionRepository
+            => _serviceProvider.GetRequiredService<IBaseRepository<VersionInfo>>();
+
+        // Другие репозитории могут быть добавлены аналогичным образом
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
@@ -27,11 +38,18 @@ namespace Data
                 return (IBaseRepository<TEntity>)repository;
             }
 
-            var logger = _loggerFactory.CreateLogger<BaseRepository<TEntity>>();
-            var newRepository = new BaseRepository<TEntity>(_context, logger);
+            var logger = new LoggerFactory().CreateLogger<BaseRepository<TEntity>>();
+            var newRepository = default(IBaseRepository<TEntity>);
+
+            newRepository = new BaseRepository<TEntity>(_context, logger);
             _repositories[typeof(TEntity)] = newRepository;
 
             return newRepository;
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
         }
     }
 }

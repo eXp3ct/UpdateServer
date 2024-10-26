@@ -16,5 +16,24 @@ namespace Data.Contexts
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
+
+        //public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        //{
+        //    var entries = ChangeTracker.Entries<Application>();
+
+        //    foreach (var entry in entries)
+        //    {
+        //        if (entry.State == EntityState.Added)
+        //        {
+        //            entry.Entity.DateOfCreation = DateTime.UtcNow;
+        //        }
+        //        else if (entry.State == EntityState.Modified)
+        //        {
+        //            entry.Entity.DateModified = DateTime.UtcNow;
+        //        }
+        //    }
+
+        //    return await base.SaveChangesAsync(cancellationToken);
+        //}
     }
 }

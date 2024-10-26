@@ -13,6 +13,7 @@ namespace Infrastructure
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddScoped<IVersionService, VersionService>();
         }
     }
 }

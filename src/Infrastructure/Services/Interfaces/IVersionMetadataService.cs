@@ -1,7 +1,4 @@
-﻿using Domain.Enums;
-using Domain.Models;
-
-namespace Infrastructure.Services.Interfaces
+﻿namespace Infrastructure.Services.Interfaces
 {
     public interface IVersionMetadataService
     {

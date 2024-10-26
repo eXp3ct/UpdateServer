@@ -12,5 +12,8 @@ namespace Infrastructure.Services.Interfaces
         //public IEnumerable<VersionInfoShort> GetAllVersionsAsync(string appName);
         //public Task AddVersionAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default);
         //public Task DeleteVersionById(Guid id, CancellationToken cancellationToken = default);
+        public Task<VersionInfo?> GetLatestVersionAsync(string appName, CancellationToken cancellationToken = default);
+
+        public Task<VersionInfo?> GetVersionByString(string appName, string version, CancellationToken cancellationToken = default);
     }
 }

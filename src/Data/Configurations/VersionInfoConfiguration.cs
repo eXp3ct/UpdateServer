@@ -36,6 +36,10 @@ namespace Data.Configurations
                 .WithMany()
                 .HasForeignKey(v => v.PathId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<Application>()
+                .WithMany()
+                .HasForeignKey(v => v.ApplicationId);
         }
     }
 }

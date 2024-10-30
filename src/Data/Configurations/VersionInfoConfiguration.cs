@@ -31,12 +31,6 @@ namespace Data.Configurations
             builder.Property(v => v.ReleaseUrl)
                 .HasMaxLength(500);
 
-            // Связь с таблицей VersionPath (один ко многим)
-            builder.HasOne<VersionPath>()
-                .WithMany()
-                .HasForeignKey(v => v.PathId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasOne<Application>()
                 .WithMany()
                 .HasForeignKey(v => v.ApplicationId);

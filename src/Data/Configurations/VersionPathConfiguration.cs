@@ -17,6 +17,10 @@ namespace Data.Configurations
 
             builder.Property(vp => vp.ZipPath)
                 .HasMaxLength(500);
+
+            builder.HasOne<VersionInfo>()
+                .WithOne()
+                .HasForeignKey<VersionPath>(x => x.VersionInfoId);
         }
     }
 }

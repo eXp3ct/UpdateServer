@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Data.Inferfaces;
 using Domain.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -16,14 +17,20 @@ namespace Api.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseRepository<TEntity> _repository;
         private readonly IMapper _mapper;
+        private readonly IValidator<TEntity> _validator;
         private readonly ILogger<BaseController<TEntity, TEntityDto>> _logger;
 
-        public BaseController(IMapper mapper, IUnitOfWork unitOfWork, ILogger<BaseController<TEntity, TEntityDto>> logger)
+        public BaseController(
+            IMapper mapper,
+            IUnitOfWork unitOfWork,
+            ILogger<BaseController<TEntity, TEntityDto>> logger,
+            IValidator<TEntity> validator)
         {
             _repository = unitOfWork.Repository<TEntity>();
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _validator = validator;
         }
 
         // Получить все
@@ -52,6 +59,10 @@ namespace Api.Controllers
         public async Task<IActionResult> CreateAsync([FromBody] TEntityDto dto, CancellationToken cancellationToken)
         {
             var entity = _mapper.Map<TEntity>(dto);
+
+            var validationResult = await _validator.ValidateAsync(entity, cancellationToken);
+            if(!validationResult.IsValid) return BadRequest(validationResult.Errors.Select(x => x.ErrorMessage));
+
             var createdEntity = await _repository.CreateAsync(entity, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             return CreatedAtAction(nameof(GetByIdAsync), new { id = createdEntity.Id }, createdEntity);
@@ -62,6 +73,9 @@ namespace Api.Controllers
         public virtual async Task<IActionResult> UpdateAsync(int id, [FromBody] TEntityDto dto, CancellationToken cancellationToken)
         {
             var entity = _mapper.Map<TEntity>(dto);
+
+            var validationResult = await _validator.ValidateAsync(entity, cancellationToken);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors.Select(x => x.ErrorMessage));
 
             var updatedEntity = await _repository.UpdateAsync(id, entity, cancellationToken);
             if (updatedEntity == null)

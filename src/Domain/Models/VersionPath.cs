@@ -7,5 +7,6 @@ namespace Domain.Models
         public int Id { get; set; }
         public string? ChangelogPath { get; set; }
         public string? ZipPath { get; set; }
+        public int VersionInfoId { get; set; }
     }
 }

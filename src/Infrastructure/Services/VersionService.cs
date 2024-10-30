@@ -1,5 +1,6 @@
 ﻿using Data.Inferfaces;
 using Domain.Models;
+using Infrastructure.Compares;
 using Infrastructure.Services.Interfaces;
 
 namespace Infrastructure.Services
@@ -21,15 +22,24 @@ namespace Infrastructure.Services
 
             var version = (await _unitOfWork.VersionRepository.GetAllAsync(cancellationToken))
                 .Where(v => v.ApplicationId == application.Id && v.IsAvailable == true)
-                .OrderByDescending(v => v.ReleaseDate)
+                .OrderByDescending(v => v.Version, new VersionNumberComparer())
                 .FirstOrDefault();
 
             return version;
         }
 
-        public Task<VersionInfo?> GetVersionByString(string appName, string version, CancellationToken cancellationToken = default)
+        public async Task<VersionInfo?> GetVersionByString(string appName, string version, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var application = await _unitOfWork.ApplicationRepository.GetApplicationByNameAsync(appName, cancellationToken);
+
+            if (application == null)
+                return null;
+
+            var verionInfo = (await _unitOfWork.VersionRepository.GetAllAsync(cancellationToken))
+                .Where(v => v.ApplicationId == application.Id && v.IsAvailable == true)
+                .FirstOrDefault(v => v.Version == version);
+
+            return verionInfo;
         }
     }
 }

@@ -11,7 +11,6 @@ namespace Domain.Models
         public bool IsAvailable { get; set; }
         public string? ChangelogUrl { get; set; }
         public string? ReleaseUrl { get; set; }
-        public int PathId { get; set; }
         public int ApplicationId { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241030035117_VersionInfoNullableProperty")]
+    partial class VersionInfoNullableProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -67,6 +70,9 @@ namespace Data.Migrations
                     b.Property<bool>("IsMandatory")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("PathId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");
 
@@ -83,6 +89,8 @@ namespace Data.Migrations
 
                     b.HasIndex("ApplicationId");
 
+                    b.HasIndex("PathId");
+
                     b.ToTable("Versions", (string)null);
                 });
 
@@ -96,17 +104,11 @@ namespace Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("VersionInfoId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("ZipPath")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("VersionInfoId")
-                        .IsUnique();
 
                     b.ToTable("Paths", (string)null);
                 });
@@ -118,15 +120,11 @@ namespace Data.Migrations
                         .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
 
-            modelBuilder.Entity("Domain.Models.VersionPath", b =>
-                {
-                    b.HasOne("Domain.Models.VersionInfo", null)
-                        .WithOne()
-                        .HasForeignKey("Domain.Models.VersionPath", "VersionInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Domain.Models.VersionPath", null)
+                        .WithMany()
+                        .HasForeignKey("PathId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

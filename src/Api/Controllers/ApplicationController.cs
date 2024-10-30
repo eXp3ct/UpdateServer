@@ -2,6 +2,7 @@
 using Data.Inferfaces;
 using Domain.Dtos;
 using Domain.Models;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -15,7 +16,8 @@ namespace Api.Controllers
         public ApplicationController(
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            ILogger<BaseController<Application, ApplicationDto>> logger) : base(mapper, unitOfWork, logger)
+            ILogger<BaseController<Application, ApplicationDto>> logger,
+            IValidator<Application> validator) : base(mapper, unitOfWork, logger, validator)
         {
             _mapper = mapper;
             _repository = unitOfWork.Repository<Application>();
@@ -45,6 +47,17 @@ namespace Api.Controllers
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Ok(updatedEntity);
+        }
+
+        [HttpGet("{id}/list")]
+        public async Task<IActionResult> GetApplicationVersionsAsync([FromRoute] int id, CancellationToken cancellationToken)
+        {
+            var application = await _unitOfWork.ApplicationRepository.GetByIdAsync(id, cancellationToken);
+            if (application is null) return NotFound("Application not found");
+
+            var versions = await _unitOfWork.VersionRepository.GetAllAsync(cancellationToken);
+
+            return Ok(versions);
         }
     }
 }

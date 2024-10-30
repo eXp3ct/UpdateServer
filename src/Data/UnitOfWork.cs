@@ -21,8 +21,8 @@ namespace Data
         public IApplicationRepository ApplicationRepository
             => _serviceProvider.GetRequiredService<IApplicationRepository>();
 
-        public IBaseRepository<VersionInfo> VersionRepository
-            => _serviceProvider.GetRequiredService<IBaseRepository<VersionInfo>>();
+        public IVersionInfoRepository VersionRepository
+            => _serviceProvider.GetRequiredService<IVersionInfoRepository>();
 
         // Другие репозитории могут быть добавлены аналогичным образом
 

@@ -18,6 +18,7 @@ namespace Data
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
             services.AddScoped<IApplicationRepository, ApplicationRepository>();
+            services.AddScoped<IVersionInfoRepository,  VersionInfoRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }

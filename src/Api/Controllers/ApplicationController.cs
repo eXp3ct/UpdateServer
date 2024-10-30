@@ -55,7 +55,8 @@ namespace Api.Controllers
             var application = await _unitOfWork.ApplicationRepository.GetByIdAsync(id, cancellationToken);
             if (application is null) return NotFound("Application not found");
 
-            var versions = await _unitOfWork.VersionRepository.GetAllAsync(cancellationToken);
+            var versions = (await _unitOfWork.VersionRepository.GetAllAsync(cancellationToken))
+                .Where(x => x.ApplicationId == application.Id);
 
             return Ok(versions);
         }

@@ -24,6 +24,9 @@ namespace Data
         public IVersionInfoRepository VersionRepository
             => _serviceProvider.GetRequiredService<IVersionInfoRepository>();
 
+        public IVersionPathRepository PathsRepository
+            => _serviceProvider.GetRequiredService<IVersionPathRepository>();
+
         // Другие репозитории могут быть добавлены аналогичным образом
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

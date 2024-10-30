@@ -8,8 +8,8 @@ namespace Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Produces("application/json", "applicatio/xml")]
-    [Consumes("application/json", "applicatio/xml")]
+    [Produces("application/json", "application/xml")]
+    [Consumes("application/json", "application/xml")]
     public class BaseController<TEntity, TEntityDto> : ControllerBase
         where TEntity : class, IEntity
         where TEntityDto : class

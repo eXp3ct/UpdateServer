@@ -1,5 +1,4 @@
 ﻿using Domain.Interfaces;
-using Domain.Models;
 
 namespace Data.Inferfaces
 {
@@ -7,6 +6,7 @@ namespace Data.Inferfaces
     {
         public IApplicationRepository ApplicationRepository { get; }
         public IVersionInfoRepository VersionRepository { get; }
+        public IVersionPathRepository PathsRepository { get; }
 
         public IBaseRepository<TEntity> Repository<TEntity>() where TEntity : class, IEntity;
 

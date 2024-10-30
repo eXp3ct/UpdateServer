@@ -11,6 +11,7 @@ namespace Infrastructure
         public static void AddInfrastructure(this IServiceCollection services)
         {
             services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<IVersionStorageService, VersionStorageService>();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
         }

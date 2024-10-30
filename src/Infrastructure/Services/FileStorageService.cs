@@ -16,25 +16,36 @@ namespace Infrastructure.Services
 
         public Task DeleteFileAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (!File.Exists(path))
-                throw new FileNotFoundException($"File not found: {path}");
-
-            File.Delete(path);
-
-            var directory = Path.GetDirectoryName(path);
-
-            if (directory is null)
-                throw new DirectoryNotFoundException($"Directory not found: {directory}");
-
-            if (Directory.GetFiles(directory).Length <= 0)
+            try
             {
-                Directory.Delete(directory);
-                var parent = Directory.GetParent(directory);
-                if (Directory.GetFiles(path).Length <= 0)
-                    Directory.Delete(parent.FullName);
-            }
+                if (!File.Exists(path))
+                {
+                    // Просто логируем отсутствие файла, но не выбрасываем исключение
+                    return Task.CompletedTask;
+                }
 
-            return Task.CompletedTask;
+                // Получаем директорию версии до удаления файла
+                var versionDirectory = Path.GetDirectoryName(path);
+                if (versionDirectory == null)
+                    throw new DirectoryNotFoundException($"Directory not found for path: {path}");
+
+                // Удаляем файл
+                File.Delete(path);
+
+                // Проверяем остались ли файлы в директории версии
+                if (Directory.GetFiles(versionDirectory).Length == 0 &&
+                    Directory.GetDirectories(versionDirectory).Length == 0)
+                {
+                    // Если директория версии пуста - удаляем её
+                    Directory.Delete(versionDirectory);
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                throw new IOException($"Error deleting file or directory: {path}", ex);
+            }
         }
 
         public async Task<byte[]> ReadFileAsync(string path, CancellationToken cancellationToken = default)
@@ -56,6 +67,27 @@ namespace Infrastructure.Services
             await file.CopyToAsync(stream, cancellationToken);
 
             return filePath;
+        }
+
+        public Task DeleteEmptyApplicationDirectory(string applicationPath, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (!Directory.Exists(applicationPath))
+                    return Task.CompletedTask;
+
+                if (Directory.GetFiles(applicationPath, "*", SearchOption.AllDirectories).Length == 0 &&
+                    Directory.GetDirectories(applicationPath).Length == 0)
+                {
+                    Directory.Delete(applicationPath, recursive: true);
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                throw new IOException($"Error deleting application directory: {applicationPath}", ex);
+            }
         }
     }
 }

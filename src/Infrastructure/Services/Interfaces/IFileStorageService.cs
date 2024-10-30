@@ -9,5 +9,6 @@ namespace Infrastructure.Services.Interfaces
         public Task<byte[]> ReadFileAsync(string path, CancellationToken cancellationToken = default);
 
         public Task DeleteFileAsync(string path, CancellationToken cancellationToken = default);
+        public Task DeleteEmptyApplicationDirectory(string applicationPath, CancellationToken cancellationToken = default);
     }
 }

@@ -24,13 +24,19 @@ namespace Api.Controllers
         }
 
         [HttpGet("latest/{appName}")]
-        public async Task<IActionResult> GetLatestVersionAsync([FromRoute] string appName, CancellationToken cancellationToken)
+        [ProducesResponseType(typeof(VersionInfo), StatusCodes.Status200OK, "application/json", "application/xml")]
+        public async Task<IActionResult> GetLatestVersionAsync([FromRoute] string appName,
+                                                               CancellationToken cancellationToken,
+                                                               [FromHeader(Name = "Accept")] string accept = "application/xml")
         {
             var app = await _unitOfWork.ApplicationRepository.GetApplicationByNameAsync(appName, cancellationToken);
 
             if (app is null) return NotFound("Application not found");
 
             var version = await _versionRepository.GetLatestVersionAsync(app, cancellationToken);
+
+            if (accept.Contains("application/xml"))
+                return new ObjectResult(version) { ContentTypes = { "application/xml" }, StatusCode = StatusCodes.Status200OK };
 
             return Ok(version);
         }

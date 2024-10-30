@@ -1,6 +1,7 @@
 ﻿using Data.Contexts;
 using Data.Inferfaces;
 using Data.Repositories;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,8 @@ namespace Data
             services.AddScoped<IAppDbContext, AppDbContext>();
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
             services.AddScoped<IApplicationRepository, ApplicationRepository>();
-            services.AddScoped<IVersionInfoRepository,  VersionInfoRepository>();
+            services.AddScoped<IVersionInfoRepository, VersionInfoRepository>();
+            services.AddScoped<IVersionPathRepository, VersionPathRepository>();    
             services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }

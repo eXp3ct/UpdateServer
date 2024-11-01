@@ -13,4 +13,6 @@ export interface Version {
     releaseDate: string;
     isMandatory: boolean;
     isAvailable: boolean;
+    changelogUrl: string;
+    releaseUrl: string;
 }

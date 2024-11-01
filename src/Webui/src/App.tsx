@@ -5,7 +5,7 @@ import VersionList from './components/VersionList';
 import AddApplicationModal from './components/AddApplicationModal';
 import { Application } from './types/types';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { createApp, fetchApps } from './api/applicationService';
+import { createApp, deleteApp, fetchApps } from './api/applicationService';
 
 function App() {
     const [applications, setApplications] = useState<Application[]>([]);
@@ -43,10 +43,10 @@ function App() {
         setApplications([...applications, addedApp]);
     };
 
-    const handleAddVersion = (app: Application) => {
-        // Здесь будет логика добавления версии
-        console.log('Adding version for:', app.name);
-    };
+    const handleDeleteApplication = async (appId: number) => {
+        await deleteApp(appId);
+        setApplications((prev) => prev.filter((v) => v.id !== appId));
+    }
 
     return (
         <Container className="py-4">
@@ -65,6 +65,7 @@ function App() {
                                 <ApplicationCard
                                     application={app}
                                     onSelect={handleSelectApp}
+                                    onDelete={handleDeleteApplication}
                                 />
                             </Col>
                         ))}
@@ -74,7 +75,6 @@ function App() {
                     <Col md={6}>
                         <VersionList
                             selectedApp={selectedApp}
-                            onAddVersion={handleAddVersion}
                         />
                     </Col>
                 )}

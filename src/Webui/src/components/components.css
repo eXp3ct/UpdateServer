@@ -1,0 +1,13 @@
+.version-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden; /* Скрытие избыточного текста */
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Запрет переноса строки */
+}
+
+.version-item:hover {
+    background-color: #f8f9fa;
+}

@@ -1,6 +1,7 @@
 ﻿using Data.Inferfaces;
 using Domain.Enums;
 using Domain.Models;
+using Infrastructure.Services;
 using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
@@ -8,44 +9,57 @@ using System.Text;
 namespace Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class FilesController : ControllerBase
     {
-        private readonly IVersionStorageService _versionStorageService;
-        private readonly IVersionRepository _versionRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IVersionStorageService _versionStorage;
         private readonly IConfiguration _configuration;
-        public FilesController(IVersionStorageService versionStorageService, IVersionRepository versionRepository, IConfiguration configuration)
+
+        public FilesController(IUnitOfWork unitOfWork, IVersionStorageService versionStorage, IConfiguration configuration)
         {
-            _versionStorageService = versionStorageService;
-            _versionRepository = versionRepository;
+            _unitOfWork = unitOfWork;
+            _versionStorage = versionStorage;
             _configuration = configuration;
         }
 
-        [HttpPost]
+        [HttpPost("{versionId}")]
         public async Task<IActionResult> UploadFile(
-            IFormFile file,
-            [FromQuery] Guid versionId,
+            [FromRoute] int versionId,
             [FromQuery] FileType type,
+            IFormFile file,
             CancellationToken cancellationToken)
         {
-            var versionInfo = await GetVersionOrNotFound(versionId, cancellationToken);
-            if (versionInfo is null) return NotFound("Version not found");
+            var version = await _unitOfWork.VersionRepository.GetByIdAsync(versionId, cancellationToken);
+            if (version is null) return NotFound("Version not found");
 
-            var paths = await _versionStorageService.SaveVersionFileAsync(file, versionInfo, type, cancellationToken);
+            var paths = await _versionStorage.SaveVersionFileAsync(file, version, type, cancellationToken);
 
             var locationUrl = GenerateFileUrl(versionId, type);
             if (locationUrl is null) return StatusCode(500, "Failed to generate resource URL");
 
-            UpdateVersionUrl(versionInfo, type, locationUrl);
-            await _versionRepository.SaveChangesAsync(cancellationToken);
+            UpdateVersionUrl(version, type, locationUrl);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Created(locationUrl, paths);
         }
 
-        [HttpGet("{versionId}/changelog")]
-        public async Task<IActionResult> GetChangelog([FromRoute] Guid versionId, CancellationToken cancellationToken)
+        [HttpGet("{versionId}")]
+        public async Task<IActionResult> GetRelease([FromRoute] int versionId, CancellationToken cancellationToken)
         {
-            var versionInfo = await GetVersionOrNotFound(versionId, cancellationToken);
+            var versionInfo = await _unitOfWork.VersionRepository.GetByIdAsync(versionId, cancellationToken);
+            if (versionInfo is null) return NotFound("Version not found");
+
+            var fileBytes = await _versionStorage.ReadVersionFileAsync(versionInfo, FileType.Zip, cancellationToken);
+            if (fileBytes is null) return NotFound("File not found");
+
+            return File(fileBytes, "application/zip", _configuration["DefaultReleaseFileName"]);
+        }
+
+        [HttpGet("{versionId}/changelog")]
+        public async Task<IActionResult> GetChangelog([FromRoute] int versionId, CancellationToken cancellationToken)
+        {
+            var versionInfo = await _unitOfWork.VersionRepository.GetByIdAsync(versionId, cancellationToken);
             if (versionInfo is null) return NotFound("Version not found");
 
             var htmlContent = await ReadFileAsString(versionInfo, FileType.Changelog, cancellationToken);
@@ -54,46 +68,19 @@ namespace Api.Controllers
             return Content(htmlContent, "text/html");
         }
 
-        [HttpGet("{versionId}")]
-        public async Task<IActionResult> GetRelease([FromRoute] Guid versionId, CancellationToken cancellationToken)
-        {
-            var versionInfo = await GetVersionOrNotFound(versionId, cancellationToken);
-            if (versionInfo is null) return NotFound("Version not found");
-
-            var fileBytes = await _versionStorageService.ReadVersionFileAsync(versionInfo, FileType.Zip, cancellationToken);
-            if (fileBytes is null) return NotFound("File not found");
-
-            return File(fileBytes, "application/zip", _configuration["DefaultReleaseFileName"]);
-        }
-
         [HttpDelete("{versionId}")]
-        public async Task<IActionResult> DeleteVersionFromStorage([FromRoute] Guid versionId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteVersionFromStorage([FromRoute] int versionId, CancellationToken cancellationToken)
         {
-            var versionInfo = await GetVersionOrNotFound(versionId, cancellationToken);
+            var versionInfo = await _unitOfWork.VersionRepository.GetByIdAsync(versionId, cancellationToken);
             if (versionInfo is null) return NotFound("Version not found");
 
-            await _versionStorageService.DeleteVersionFilesAsync(versionInfo, cancellationToken);
-            //try
-            //{
-            //}
-            //catch
-            //{
-            //    return BadRequest();
-            //}
+            await _versionStorage.DeleteVersionFilesAsync(versionInfo, cancellationToken);
 
-            return RedirectToAction(
-                nameof(VersionsController.DeleteVersionEntry),
-                "Versions",
-                new { versionId }
-            ); ;
+
+            return NoContent();
         }
 
-        private async Task<VersionInfo?> GetVersionOrNotFound(Guid versionId, CancellationToken cancellationToken)
-        {
-            return await _versionRepository.GetByIdAsync(versionId, cancellationToken);
-        }
-
-        private string? GenerateFileUrl(Guid versionId, FileType type)
+        private string? GenerateFileUrl(int versionId, FileType type)
         {
             return type switch
             {
@@ -108,18 +95,18 @@ namespace Api.Controllers
             switch (type)
             {
                 case FileType.Changelog:
-                    versionInfo.ChangelogFileUrl = url;
+                    versionInfo.ChangelogUrl = url;
                     break;
                 case FileType.Zip:
-                    versionInfo.ZipUrl = url;
+                    versionInfo.ReleaseUrl = url;
                     break;
             }
         }
-
         private async Task<string?> ReadFileAsString(VersionInfo versionInfo, FileType type, CancellationToken cancellationToken)
         {
-            var fileBytes = await _versionStorageService.ReadVersionFileAsync(versionInfo, type, cancellationToken);
+            var fileBytes = await _versionStorage.ReadVersionFileAsync(versionInfo, type, cancellationToken);
             return fileBytes is not null ? Encoding.UTF8.GetString(fileBytes) : null;
         }
+
     }
 }

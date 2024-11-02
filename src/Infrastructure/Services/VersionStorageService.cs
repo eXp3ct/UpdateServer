@@ -1,6 +1,7 @@
 ﻿using Data.Inferfaces;
 using Domain.Enums;
 using Domain.Models;
+using Infrastructure.Extensions;
 using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -9,37 +10,40 @@ namespace Infrastructure.Services
 {
     public class VersionStorageService : IVersionStorageService
     {
-        private readonly IFileStorageService _fileService;
-        private readonly IVersionMetadataService _metadataService;
-        private readonly IVersionRepository _versionRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
+        private readonly IFileStorageService _fileService;
 
-        public VersionStorageService(
-            IFileStorageService fileService,
-            IVersionMetadataService metadataService,
-            IVersionRepository versionRepository,
-            IConfiguration configuration)
+        public VersionStorageService(IUnitOfWork unitOfWork, IConfiguration configuration, IFileStorageService fileService)
         {
-            _fileService = fileService;
-            _metadataService = metadataService;
-            _versionRepository = versionRepository;
+            _unitOfWork = unitOfWork;
             _configuration = configuration;
+            _fileService = fileService;
         }
 
         public async Task DeleteVersionFilesAsync(VersionInfo versionInfo, CancellationToken cancellationToken = default)
         {
-            var versionPaths = await _metadataService.GetVersionPathsAsync(versionInfo, cancellationToken)
+            var versionPaths = await _unitOfWork.PathsRepository.GetVersionPathByVersionId(versionInfo.Id, cancellationToken)
                 ?? throw new ArgumentNullException($"Version paths not found: {versionInfo.Id}");
 
+            var appDirectory = Path.GetDirectoryName(Path.GetDirectoryName(versionPaths.ZipPath));
+
+            // Удаляем файлы
             await _fileService.DeleteFileAsync(versionPaths.ChangelogPath, cancellationToken);
             await _fileService.DeleteFileAsync(versionPaths.ZipPath, cancellationToken);
+
+            // Проверяем и удаляем директорию приложения, если она пуста
+            if (appDirectory != null)
+            {
+                await _fileService.DeleteEmptyApplicationDirectory(appDirectory, cancellationToken);
+            }
         }
 
         public async Task<byte[]?> ReadVersionFileAsync(VersionInfo versionInfo, FileType type, CancellationToken cancellationToken = default)
         {
-            var versionPaths = await _metadataService.GetVersionPathsAsync(versionInfo, cancellationToken);
+            var versionPaths = await _unitOfWork.PathsRepository.GetVersionPathByVersionId(versionInfo.Id, cancellationToken);
 
-            if(versionPaths is null) return null;
+            if (versionPaths is null) return null;
 
             var filePath = type switch
             {
@@ -51,16 +55,17 @@ namespace Infrastructure.Services
             return await _fileService.ReadFileAsync(filePath, cancellationToken);
         }
 
-        public async Task<VersionPaths> SaveVersionFileAsync(IFormFile file, VersionInfo versionInfo, FileType type, CancellationToken cancellationToken = default)
+        public async Task<VersionPath> SaveVersionFileAsync(IFormFile file, VersionInfo versionInfo, FileType type, CancellationToken cancellationToken = default)
         {
-            var folder = Path.Combine(versionInfo.ApplicationName, versionInfo.ReleaseDate.ToString("yyyy-MM-dd"));
+            var app = await _unitOfWork.ApplicationRepository.GetByIdAsync(versionInfo.ApplicationId, cancellationToken);
+            var folder = Path.Combine(app.Name, versionInfo.Version.VersionToKebabFormat());
             var fileName = type == FileType.Changelog ? _configuration["DefaultChangelogFileName"] : _configuration["DefaultReleaseFileName"];
 
             // Сохраняем файл на диск
             var filePath = await _fileService.SaveFileAsync(file, folder, fileName, cancellationToken);
 
             // Обновляем или создаем запись путей в базе данных
-            return await _metadataService.UpdateVersionPathsAsync(versionInfo, type, filePath, cancellationToken);
+            return await _unitOfWork.PathsRepository.UpdateVersionPathsAsync(versionInfo.Id, type, filePath, cancellationToken);
         }
     }
 }

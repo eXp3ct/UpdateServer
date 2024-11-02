@@ -23,7 +23,6 @@ namespace Api
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
-
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -40,7 +39,10 @@ namespace Api
                     });
             });
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfiguration>();
-            services.AddControllers()
+            services.AddControllers(options =>
+            {
+                options.SuppressAsyncSuffixInActionNames = false;
+            })
                 .AddNewtonsoftJson()
                 .AddXmlSerializerFormatters();
             services.AddEndpointsApiExplorer();

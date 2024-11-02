@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Data.Configurations
 {
-    public class VersionPathConfiguration : IEntityTypeConfiguration<VersionPaths>
+    public class VersionPathConfiguration : IEntityTypeConfiguration<VersionPath>
     {
-        public void Configure(EntityTypeBuilder<VersionPaths> builder)
+        public void Configure(EntityTypeBuilder<VersionPath> builder)
         {
-            builder.HasKey(vp => vp.VersionInfoId);
+            builder.ToTable("Paths");
+
+            builder.HasKey(vp => vp.Id);
 
             builder.Property(vp => vp.ChangelogPath)
                 .HasMaxLength(500);
@@ -16,10 +18,9 @@ namespace Data.Configurations
             builder.Property(vp => vp.ZipPath)
                 .HasMaxLength(500);
 
-            builder.HasOne(vp => vp.VersionInfo)
+            builder.HasOne<VersionInfo>()
                 .WithOne()
-                .HasForeignKey<VersionPaths>(vp => vp.VersionInfoId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey<VersionPath>(x => x.VersionInfoId);
         }
     }
 }

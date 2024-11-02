@@ -10,11 +10,10 @@ namespace Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services)
         {
-            services.AddScoped<IVersionService, VersionService>();
-            services.AddScoped<IVersionStorageService, VersionStorageService>();
             services.AddScoped<IFileStorageService, FileStorageService>();
-            services.AddScoped<IVersionMetadataService, VersionMetadataService>();
+            services.AddScoped<IVersionStorageService, VersionStorageService>();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
         }
     }
 }

@@ -17,21 +17,51 @@ namespace Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
 
+            modelBuilder.Entity("Domain.Models.Application", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateOfCreation")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("datetime(current_timestamp, 'localtime')");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Applications", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Models.VersionInfo", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ChangelogUrl")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ApplicationName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ChangelogFileUrl")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsAvailable")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsMandatory")
@@ -40,48 +70,63 @@ namespace Data.Migrations
                     b.Property<DateTime>("ReleaseDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Version")
-                        .IsRequired()
+                    b.Property<string>("ReleaseUrl")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ZipUrl")
+                    b.Property<string>("Version")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Versions");
+                    b.HasIndex("ApplicationId");
+
+                    b.ToTable("Versions", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Models.VersionPaths", b =>
+            modelBuilder.Entity("Domain.Models.VersionPath", b =>
                 {
-                    b.Property<Guid>("VersionInfoId")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ChangelogPath")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("VersionInfoId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ZipPath")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("VersionInfoId");
+                    b.HasKey("Id");
 
-                    b.ToTable("Paths");
+                    b.HasIndex("VersionInfoId")
+                        .IsUnique();
+
+                    b.ToTable("Paths", (string)null);
                 });
 
-            modelBuilder.Entity("Domain.Models.VersionPaths", b =>
+            modelBuilder.Entity("Domain.Models.VersionInfo", b =>
                 {
-                    b.HasOne("Domain.Models.VersionInfo", "VersionInfo")
-                        .WithOne()
-                        .HasForeignKey("Domain.Models.VersionPaths", "VersionInfoId")
+                    b.HasOne("Domain.Models.Application", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
 
-                    b.Navigation("VersionInfo");
+            modelBuilder.Entity("Domain.Models.VersionPath", b =>
+                {
+                    b.HasOne("Domain.Models.VersionInfo", null)
+                        .WithOne()
+                        .HasForeignKey("Domain.Models.VersionPath", "VersionInfoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

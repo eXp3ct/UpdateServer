@@ -1,24 +1,3 @@
-.app-button {
-    transition:
-        background-color 0.3s,
-        transform 0.1s;
-}
-
-.app-button.active{
-    background-color: #d6f4f7;
-}
-
-.app-button:hover {
-    background-color: #f8f9fa;
-    transform: scale(1.03);
-    cursor: pointer;
-}
-
-.version-list {
-    max-width: 600px; /* Ограничиваем ширину списка */
-    margin: 0 auto; /* Центрируем его */
-}
-
 .version-item {
     display: flex;
     justify-content: space-between;
@@ -31,28 +10,4 @@
 
 .version-item:hover {
     background-color: #f8f9fa;
-}
-
-.version-info .label {
-    font-weight: bold;
-    text-align: right;
-    white-space: nowrap;
-}
-
-.version-info .value {
-    text-align: left;
-    word-break: break-word;
-}
-
-.version-info .link {
-    color: #007bff;
-    text-decoration: none;
-    max-width: 100%; /* Ограничиваем длину */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-}
-
-.version-info .link:hover {
-    text-decoration: underline;
 }

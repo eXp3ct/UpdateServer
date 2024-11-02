@@ -1,6 +1,7 @@
 ﻿using Data.Contexts;
 using Data.Inferfaces;
 using Data.Repositories;
+using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +17,11 @@ namespace Data
 
             services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
             services.AddScoped<IAppDbContext, AppDbContext>();
-            services.AddScoped<IVersionRepository, VersionRepository>();
-            services.AddScoped<IVersionPathsRepository, VersionPathsRepository>();
+            services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            services.AddScoped<IApplicationRepository, ApplicationRepository>();
+            services.AddScoped<IVersionInfoRepository, VersionInfoRepository>();
+            services.AddScoped<IVersionPathRepository, VersionPathRepository>();    
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }
 }

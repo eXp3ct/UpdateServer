@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ListGroup, Button, Modal, Row, Col } from 'react-bootstrap';
 import { Version, Application } from '../types/types';
-import { createVersion, deleteVersionById, fetchAppVersions, getVersionById } from '../api/versionService';
+import { createVersion, deleteVersionById, fetchAppVersions, getLatestVersion, getVersionById } from '../api/versionService';
 import './components.css';
 import AddVersionModal from './AddVersionModal';
-import { uploadFile } from '../api/filesService';
+import { deleteFiles, uploadFile } from '../api/filesService';
 
 
 interface Props {
@@ -15,30 +15,46 @@ const VersionList: React.FC<Props> = ({ selectedApp }) => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [versions, setVersions] = useState<Version[]>([]);
     const [selectedVersion, setSelectedVersion] = useState<Version | null>(null);
-    const [newVersion, setNewVersion] = useState<Version>({
-        applicationId: 0,
-        changelogUrl: '',
-        id: 0,
-        isAvailable: false,
-        isMandatory: false,
-        releaseDate: '',
-        releaseUrl: '',
-        version: ''
-    });
+    const [latestVersion, setLatestVersion] = useState<Version>();
 
     useEffect(() => {
         const loadVersions = async (appId: number) => {
             try {
-                const versions = await fetchAppVersions(appId);
+                let versions = await fetchAppVersions(appId);
+        
+                // Сортируем версии по убыванию, сравнивая номера версии как числа
+                versions = versions.sort((a, b) => {
+                    const versionA = a.version.split('.').map(Number);
+                    const versionB = b.version.split('.').map(Number);
+                    for (let i = 0; i < versionA.length; i++) {
+                        if ((versionB[i] || 0) - (versionA[i] || 0) !== 0) {
+                            return (versionB[i] || 0) - (versionA[i] || 0);
+                        }
+                    }
+                    return 0;
+                });
+        
                 setVersions(versions);
             } catch (error) {
                 console.error('Error fetching versions', error);
             }
         }
+        const getLatest = async (appName: string) => {
+            try{
+                const latest = await getLatestVersion(appName);
+                setLatestVersion(latest);
+            }catch(error){
+                console.error('Error fetching latest version', error);
+            }
+        }
+
         loadVersions(selectedApp.id);
+        getLatest(selectedApp.name);
+
     }, [selectedApp]);
 
     const handleDelete = async (versionId: number) => {
+        await deleteFiles(versionId);
         await deleteVersionById(versionId);
         setVersions((prev) => prev.filter((v) => v.id !== versionId));
     }
@@ -50,18 +66,18 @@ const VersionList: React.FC<Props> = ({ selectedApp }) => {
 
     const handleClose = () => setSelectedVersion(null);
 
-    const handleAddVersion = async (version: Partial<Version>) => {
-        const createdVersion = await createVersion({applicationId: selectedApp.id, ...version});
-
-        console.log(createdVersion);
-
-        setNewVersion(createdVersion);
-        setVersions([newVersion, ...versions]);
-    }
-
-    const handleUploadFiles = async (file: File, type: number) => {
-        await uploadFile(file, newVersion.id, type);
-    }
+    const handleAddVersion = async (version: Partial<Version>, changelogFile?: File, releaseFile?: File) => {
+        const createdVersion = await createVersion({ applicationId: selectedApp.id, ...version });
+    
+        if (changelogFile) {
+            await uploadFile(changelogFile, createdVersion.id, 0);
+        }
+        if (releaseFile) {
+            await uploadFile(releaseFile, createdVersion.id, 1);
+        }
+    
+        setVersions([createdVersion, ...versions]);
+    };
 
     return (
         <div>
@@ -82,6 +98,9 @@ const VersionList: React.FC<Props> = ({ selectedApp }) => {
                             <small>Дата релиза: {new Intl.DateTimeFormat('ru-RU', {
                                 dateStyle: 'full',
                             }).format(new Date(version.releaseDate))}</small>
+                            {version.id === latestVersion?.id && (
+                                <span className="badge bg-success ms-2">Последняя</span>
+                            )}
                             {version.isMandatory && (
                                 <span className="badge bg-warning ms-2">Обязательна</span>
                             )}
@@ -175,7 +194,6 @@ const VersionList: React.FC<Props> = ({ selectedApp }) => {
                 show={showModal}
                 onHide={() => setShowModal(false)}
                 onAdd={handleAddVersion}
-                onUploadFile={handleUploadFiles}
             />
         </div>
     );

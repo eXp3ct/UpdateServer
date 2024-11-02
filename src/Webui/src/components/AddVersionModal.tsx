@@ -5,38 +5,35 @@ import { Version } from '../types/types';
 interface Props {
     show: boolean;
     onHide: () => void;
-    onAdd: (version: Partial<Version>) => void;
-    onUploadFile: (file: File, type: number) => void;
+    onAdd: (version: Partial<Version>, changelogFile?: File, releaseFile?: File) => void;
 }
 
-const AddVersionModal: React.FC<Props> = ({ show, onHide, onAdd, onUploadFile }) => {
+const AddVersionModal: React.FC<Props> = ({ show, onHide, onAdd }) => {
 
     const [versionNumber, setVersionNumber] = useState<string>('');
     const [isMandatory, setIsMandatory] = useState<boolean>(false);
     const [isAvailable, setIsAvailable] = useState<boolean>(true);
-    const [changelogFile, setChangelogFile] = useState<File | null>(null);
-    const [releaseFile, setReleaseFile] = useState<File | null>(null);
+    const [changelogFile, setChangelogFile] = useState<File>();
+    const [releaseFile, setReleaseFile] = useState<File>();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Здесь передаем основные данные версии
-        onAdd({ version: versionNumber, isAvailable: isAvailable, isMandatory: isMandatory });
+        onAdd(
+            {
+                version: versionNumber,
+                isAvailable: isAvailable,
+                isMandatory: isMandatory,
+            },
+            changelogFile,
+            releaseFile
+        );
 
-        // Вызов функции загрузки файлов (например, после успешного добавления версии)
-        if (changelogFile) {
-            onUploadFile(changelogFile, 0); // Передать реальный ID версии и тип файла
-        }
-        if (releaseFile) {
-            onUploadFile(releaseFile, 1); // Передать реальный ID версии и тип файла
-        }
-
-        // Очистка формы после отправки
         setVersionNumber('');
         setIsAvailable(false);
         setIsMandatory(true);
-        setChangelogFile(null);
-        setReleaseFile(null);
+        setChangelogFile(undefined);
+        setReleaseFile(undefined);
 
         onHide();
     };
@@ -54,6 +51,9 @@ const AddVersionModal: React.FC<Props> = ({ show, onHide, onAdd, onUploadFile })
                             type="text"
                             value={versionNumber}
                             onChange={(e) => setVersionNumber(e.target.value)}
+                            className="form-control"
+                            pattern="\d\.\d\.\d\.\d"
+                            placeholder="0.0.0.0"
                             required
                         />
                     </Form.Group>
@@ -78,8 +78,8 @@ const AddVersionModal: React.FC<Props> = ({ show, onHide, onAdd, onUploadFile })
                         <Form.Control
                             type="file"
                             onChange={(e) => {
-                                const target = e.target as HTMLInputElement; // Приведение к HTMLInputElement
-                                setChangelogFile(target.files ? target.files[0] : null);
+                                const target = e.target as HTMLInputElement;
+                                setChangelogFile(target.files ? target.files[0] : undefined);
                             }}
                             required
                         />
@@ -89,8 +89,8 @@ const AddVersionModal: React.FC<Props> = ({ show, onHide, onAdd, onUploadFile })
                         <Form.Control
                             type="file"
                             onChange={(e) => {
-                                const target = e.target as HTMLInputElement; // Приведение к HTMLInputElement
-                                setReleaseFile(target.files ? target.files[0] : null);
+                                const target = e.target as HTMLInputElement;
+                                setReleaseFile(target.files ? target.files[0] : undefined);
                             }}
                             required
                         />

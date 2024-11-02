@@ -16,3 +16,7 @@ export async function getVersionById(versionId: number): Promise<Version>{
 export async function createVersion(verion: Partial<Version>): Promise<Version> {
     return post<Version>(`version`, verion);
 }
+
+export async function getLatestVersion(appName: string): Promise<Version> {
+    return get<Version>(`version/latest/${appName}`);
+}

@@ -1,4 +1,4 @@
-import { post } from "./apiClient";
+import { del, post } from "./apiClient";
 
 export async function uploadFile(file: File, versionId: number, type: number): Promise<any> {
     
@@ -10,4 +10,8 @@ export async function uploadFile(file: File, versionId: number, type: number): P
             'Content-Type': 'multipart/form-data'
         }
     });
+}
+
+export async function deleteFiles(versionId: number): Promise<any> {
+    return del<any>(`files/${versionId}`);
 }

@@ -3,6 +3,7 @@ using Data.Inferfaces;
 using Domain.Dtos;
 using Domain.Models;
 using FluentValidation;
+using Infrastructure.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -12,16 +13,19 @@ namespace Api.Controllers
         private readonly IMapper _mapper;
         private readonly IBaseRepository<Application> _repository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IVersionStorageService _versionStorageService;
 
         public ApplicationController(
             IMapper mapper,
             IUnitOfWork unitOfWork,
             ILogger<BaseController<Application, ApplicationDto>> logger,
-            IValidator<Application> validator) : base(mapper, unitOfWork, logger, validator)
+            IValidator<Application> validator,
+            IVersionStorageService versionStorageService) : base(mapper, unitOfWork, logger, validator)
         {
             _mapper = mapper;
             _repository = unitOfWork.Repository<Application>();
             _unitOfWork = unitOfWork;
+            _versionStorageService = versionStorageService;
         }
 
         public override async Task<IActionResult> UpdateAsync(int id, [FromBody] ApplicationDto dto, CancellationToken cancellationToken)
@@ -59,6 +63,19 @@ namespace Api.Controllers
                 .Where(x => x.ApplicationId == application.Id);
 
             return Ok(versions);
+        }
+
+        public override async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+        {
+            var versions = (await _unitOfWork.VersionRepository.GetAllAsync(cancellationToken))
+                .Where(x => x.ApplicationId == id);
+
+            foreach(var version in versions)
+            {
+                await _versionStorageService.DeleteVersionFilesAsync(version, cancellationToken);
+            }
+
+            return await base.DeleteAsync(id, cancellationToken);
         }
     }
 }

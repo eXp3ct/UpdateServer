@@ -17,16 +17,16 @@ function App() {
     };
 
     useEffect(() => {
-      const loadApplications = async () => {
-        try{
-          const apps = await fetchApps();
-          setApplications(apps);
-        }catch(error){
-          console.error('Cannot load applications', error);
+        const loadApplications = async () => {
+            try {
+                const apps = await fetchApps();
+                setApplications(apps);
+            } catch (error) {
+                console.error('Cannot load applications', error);
+            }
         }
-      }
 
-      loadApplications();
+        loadApplications();
     }, []);
 
     const handleAddApplication = async (name: string, description: string) => {
@@ -57,7 +57,12 @@ function App() {
                 </Button>
             </div>
 
-            <Row>
+            {applications.length <= 0 
+            ? 
+            <h3 className='text-center'>
+                Нет сохранненых приложений
+            </h3> 
+            : (<Row>
                 <Col md={selectedApp ? 6 : 12}>
                     <Row>
                         {applications.map(app => (
@@ -78,7 +83,7 @@ function App() {
                         />
                     </Col>
                 )}
-            </Row>
+            </Row>)}
 
             <AddApplicationModal
                 show={showAddModal}

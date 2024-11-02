@@ -89,7 +89,7 @@ namespace Api.Controllers
 
         // Удалить сущность
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
+        public virtual async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             var deletedEntity = await _repository.DeleteAsync(id, cancellationToken);
             if (deletedEntity == null)

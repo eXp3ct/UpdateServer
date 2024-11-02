@@ -87,7 +87,12 @@ const VersionList: React.FC<Props> = ({ selectedApp }) => {
                     Добавить версию
                 </Button>
             </div>
-            <ListGroup>
+            {versions.length <= 0 
+            ? 
+            <h5>
+                Нет сохранненых версий
+            </h5> 
+            : (<ListGroup>
                 {versions.map(version => (
                     <ListGroup.Item 
                     key={version.id} 
@@ -122,7 +127,7 @@ const VersionList: React.FC<Props> = ({ selectedApp }) => {
                         </Button>
                     </ListGroup.Item>
                 ))}
-            </ListGroup>
+            </ListGroup>)}
 
             <Modal show={!!selectedVersion} onHide={handleClose} centered>
                 <Modal.Header closeButton>

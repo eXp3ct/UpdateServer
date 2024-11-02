@@ -1,12 +1,9 @@
 // apiClient.ts
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { envConfig } from '../config/env.config';
 
-// Базовый URL API
-const BASE_URL = 'http://localhost:5069/api/';
-
-// Создаем экземпляр axios с базовым URL и общими настройками
 const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: envConfig.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -1,53 +1,87 @@
-API_PATH=./src/Api
-WEBUI_PATH=./src/Webui
-API_PORT=5069
-API_URL=http://localhost:$(API_PORT)
+# Makefile for Vite + ASP.NET Core project
 
-# Определение команды для установки serve на разных ОС
+# Пути и настройки
+API_PATH=./api
+WEBUI_PATH=./webui
+API_PORT=5069
+API_URL=http://localhost:$(API_PORT)/api
+NODE_ENV ?= development
+
+# Определение ОС
 ifeq ($(OS),Windows_NT)
-    INSTALL_SERVE=npm install -g serve
+    KILL_API=taskkill /F /IM dotnet.exe || true
+    KILL_WEBUI=taskkill /F /IM node.exe || true
 else
-    INSTALL_SERVE=sudo npm install -g serve
+    KILL_API=pkill -f "dotnet Api.dll" || true
+    KILL_WEBUI=pkill -f "vite" || true
 endif
+
+.PHONY: install start-api start-webui start-all stop logs clean
+
+# Установка зависимостей
+install:
+	@echo "Installing API dependencies..."
+	cd $(API_PATH) && dotnet restore
+	@echo "Installing WebUI dependencies..."
+	cd $(WEBUI_PATH) && npm install
 
 # Запуск API
 start-api:
+	@echo "Starting API on port $(API_PORT)..."
 	cd $(API_PATH) && \
-	nohup dotnet Api.dll --urls=http://0.0.0.0:$(API_PORT) > api.log 2>&1 & \
-	echo "ASP.NET API запущено на порту $(API_PORT)"
+	dotnet Api.dll --urls=http://0.0.0.0:$(API_PORT) > api.log 2>&1 & \
+	echo "ASP.NET API started on port $(API_PORT)"
 
-# Изменение API_URL в config.json перед запуском WebUI
-configure-webui:
-	@echo "Обновление API URL в config.json"
-	sed -i.bak 's|"API_URL":.*|"API_URL": "$(API_URL)"|' $(WEBUI_PATH)/public/config.json
-
-# Установка serve, если он не установлен
-install-serve:
-	@if ! command -v serve >/dev/null 2>&1; then \
-		echo "Устанавливаю serve..."; \
-		$(INSTALL_SERVE); \
-	else \
-		echo "serve уже установлен"; \
-	fi
-
-# Запуск React WebUI
-start-webui: configure-webui install-serve
+# Запуск Vite в режиме разработки
+start-webui-dev: export API_URL=$(API_URL)
+start-webui-dev: export NODE_ENV=development
+start-webui-dev:
+	@echo "Starting Vite dev server..."
 	cd $(WEBUI_PATH) && \
-	nohup serve -s build > webui.log 2>&1 & \
-	echo "ReactJS запущено на порту 3000"
+	npm run dev > webui.log 2>&1 & \
+	echo "Vite dev server started"
+
+# Запуск собранного Vite приложения
+start-webui-prod: export API_URL=$(API_URL)
+start-webui-prod: export NODE_ENV=production
+start-webui-prod:
+	@echo "Starting production build..."
+	cd $(WEBUI_PATH) && \
+	npm run preview > webui.log 2>&1 & \
+	echo "Production server started"
+
+# Сборка для разных окружений
+build-dev: export API_URL=$(API_URL)
+build-dev: export NODE_ENV=development
+build-dev:
+	cd $(WEBUI_PATH) && npm run build -- --mode development
+
+build-prod: export API_URL=$(API_URL)
+build-prod: export NODE_ENV=production
+build-prod:
+	cd $(WEBUI_PATH) && npm run build -- --mode production
+
+# Запуск всего в режиме разработки
+start-all-dev: start-api start-webui-dev
+
+# Запуск всего в режиме production
+start-all-prod: start-api start-webui-prod
 
 # Остановка всех процессов
 stop:
-	pkill -f "dotnet Api.dll" || true
-	pkill -f "serve -s" || true
-	echo "Все процессы остановлены"
+	$(KILL_API)
+	$(KILL_WEBUI)
+	@echo "All processes stopped"
 
-# Показ последних 20 строк логов API и WebUI
+# Очистка
+clean:
+	rm -rf $(API_PATH)/bin $(API_PATH)/obj
+	rm -rf $(WEBUI_PATH)/dist $(WEBUI_PATH)/node_modules
+	rm -f $(API_PATH)/api.log $(WEBUI_PATH)/webui.log
+
+# Показ логов
 logs:
-	@echo "=== Логи API ==="
-	@tail -n 20 $(API_PATH)/api.log || echo "Лог API недоступен"
-	@echo "\n=== Логи React ==="
-	@tail -n 20 $(WEBUI_PATH)/webui.log || echo "Лог React недоступен"
-
-# Запуск API и WebUI
-start-all: start-api start-webui
+	@echo "=== API Logs ==="
+	@tail -n 20 $(API_PATH)/api.log || echo "API log not available"
+	@echo "\n=== WebUI Logs ==="
+	@tail -n 20 $(WEBUI_PATH)/webui.log || echo "WebUI log not available"

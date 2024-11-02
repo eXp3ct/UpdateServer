@@ -5,7 +5,7 @@ on:
     branches:
       - main
     types:
-      - closed  # Запуск при закрытии PR (слиянии)
+      - closed
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: '20.13.1'
 
-      - name: Build ASP.NET Core API и выполнить миграции
+      - name: Build ASP.NET Core API
         working-directory: src/Api
         run: |
           dotnet restore
@@ -33,19 +33,27 @@ jobs:
 
       - name: Install dependencies for React
         working-directory: src/Webui
-        run: npm install
-
-      - name: Build React app
-        working-directory: src/Webui
-        run: npm run build
-
-      - name: Move React build to output
         run: |
-            mkdir output/webui/
-            mv ./src/Webui/build/* output/webui/
+          npm install
+          # Создаем production .env файл
+          echo "API_URL=${{ secrets.PROD_API_URL }}" > .env.production
 
-      - name: Add Makefile to output
-        run: cp Makefile output/
+      - name: Build Vite app
+        working-directory: src/Webui
+        run: |
+          npm run build -- --mode production
+          
+      - name: Move Vite build to output
+        run: |
+          mkdir -p output/webui/
+          mv ./src/Webui/dist/* output/webui/
+
+      - name: Add Makefile and environment files to output
+        run: |
+          cp Makefile output/
+          # Создаем .env файлы для разных окружений
+          echo "API_URL=http://localhost:5069/api/" > output/.env.development
+          echo "API_URL=${{ secrets.PROD_API_URL }}" > output/.env.production
 
       - name: Archive build artifacts
         run: |
@@ -73,7 +81,7 @@ jobs:
         with:
           tag_name: v${{ env.version }}
           release_name: "Release v${{ env.version }}"
-          body: ${{ env.CHANGELOG }}  # Используем многострочный changelog
+          body: ${{ env.CHANGELOG }}
           draft: false
           prerelease: false
 

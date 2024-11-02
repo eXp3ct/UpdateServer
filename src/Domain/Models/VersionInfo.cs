@@ -8,7 +8,7 @@ namespace Domain.Models
     {
         [XmlElement("id")]
         public int Id { get; set; }
-        [XmlElement("versions")]
+        [XmlElement("version")]
         public required string Version { get; set; }
         [XmlElement("releaseDate")]
         public DateTime ReleaseDate { get; set; }

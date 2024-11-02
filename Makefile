@@ -32,35 +32,6 @@ start-api:
 	dotnet Api.dll --urls=http://0.0.0.0:$(API_PORT) > api.log 2>&1 & \
 	echo "ASP.NET API started on port $(API_PORT)"
 
-# Запуск Vite в режиме разработки
-start-webui-dev: export API_URL=$(API_URL)
-start-webui-dev: export NODE_ENV=development
-start-webui-dev:
-	@echo "Starting Vite dev server..."
-	cd $(WEBUI_PATH) && \
-	npm run dev > webui.log 2>&1 & \
-	echo "Vite dev server started"
-
-# Запуск собранного Vite приложения
-start-webui-prod: export API_URL=$(API_URL)
-start-webui-prod: export NODE_ENV=production
-start-webui-prod:
-	@echo "Starting production build..."
-	cd $(WEBUI_PATH) && \
-	npm run preview > webui.log 2>&1 & \
-	echo "Production server started"
-
-# Сборка для разных окружений
-build-dev: export API_URL=$(API_URL)
-build-dev: export NODE_ENV=development
-build-dev:
-	cd $(WEBUI_PATH) && npm run build -- --mode development
-
-build-prod: export API_URL=$(API_URL)
-build-prod: export NODE_ENV=production
-build-prod:
-	cd $(WEBUI_PATH) && npm run build -- --mode production
-
 # Запуск всего в режиме разработки
 start-all-dev: start-api start-webui-dev
 
